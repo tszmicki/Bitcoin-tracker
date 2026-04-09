@@ -1,0 +1,2620 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>₿ Bitcoin Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1a1a; --bg1:#242424; --bg2:#2c2c2c; --bg3:#353535;
+  --line:#363636; --line2:#454545; --line3:#585858;
+  --text:#ededed; --text2:#aaaaaa; --text3:#666666; --text4:#404040;
+  --btc:#f0921c; --btc-dim:rgba(240,146,28,.1); --btc-brd:rgba(240,146,28,.28);
+  --green:#4ade80; --green-bg:rgba(74,222,128,.07); --green-brd:rgba(74,222,128,.18);
+  --red:#f87171; --red-bg:rgba(248,113,113,.07); --red-brd:rgba(248,113,113,.18);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,.06); --amber-brd:rgba(251,191,36,.2);
+  --sans:'Geist',system-ui,sans-serif; --mono:'Geist Mono',monospace;
+  --r:10px; --r-sm:6px; --sh:0 1px 4px rgba(0,0,0,.35);
+  font-size:clamp(14px,1.1vw,16px);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
+
+/* ── TOPBAR ── */
+.topbar{height:52px;background:var(--bg1);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 1.75rem;position:sticky;top:0;z-index:100;gap:0}
+.logo{font-family:var(--mono);font-weight:700;font-size:.9rem;color:var(--text);display:flex;align-items:center;gap:.5rem;margin-right:1.5rem;flex-shrink:0}
+.logo-mark{width:26px;height:26px;background:var(--btc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#000}
+.tabs{display:flex;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px}
+.tab{font-family:var(--sans);font-size:.8rem;font-weight:500;padding:.32rem 1rem;border-radius:6px;border:none;background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text2);background:var(--bg2)}
+.tab.active{background:var(--bg2);color:var(--text);box-shadow:var(--sh)}
+.topbar-right{margin-left:auto;display:flex;gap:.4rem;align-items:center}
+.save-info{font-family:var(--mono);font-size:.65rem;color:var(--text3);display:flex;align-items:center;gap:.4rem;margin-right:.35rem;white-space:nowrap}
+.save-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.tbtn{font-family:var(--sans);font-size:.75rem;font-weight:500;padding:.32rem .75rem;border-radius:var(--r-sm);border:1px solid var(--line2);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.tbtn:hover{border-color:var(--line3);color:var(--text);background:var(--bg3)}
+.tbtn.primary{background:var(--btc);border-color:var(--btc);color:#000;font-weight:700}
+.tbtn.primary:hover{background:#d98218}
+
+/* ── PRICEBAR ── */
+.pricebar{background:var(--bg1);border-bottom:1px solid var(--line);padding:0 1.75rem;display:flex;align-items:center;min-height:44px}
+.pitem{display:flex;align-items:center;gap:.55rem}
+.pdiv{width:1px;height:20px;background:var(--line);margin:0 1.1rem}
+.ptag{font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.15em;text-transform:uppercase}
+.pinp{background:transparent;border:none;outline:none;font-family:var(--mono);font-size:1.05rem;font-weight:700;width:9rem;color:var(--btc);caret-color:var(--btc);border-bottom:1px dashed var(--line2);padding-bottom:1px;transition:border-color .15s}
+.pinp:focus{border-color:var(--btc)}
+.punit{font-family:var(--mono);font-size:.62rem;color:var(--text3)}
+.live-badge{font-family:var(--mono);font-size:.62rem;padding:.17rem .6rem;border-radius:99px;display:flex;align-items:center;gap:.32rem;background:var(--green-bg);border:1px solid var(--green-brd);color:var(--green)}
+.live-badge.loading{background:var(--bg3);border-color:var(--line2);color:var(--text3)}
+.live-badge.error{background:var(--red-bg);border-color:var(--red-brd);color:var(--red)}
+.live-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+.refresh-btn{font-family:var(--sans);font-size:.72rem;color:var(--text3);background:none;border:none;cursor:pointer;padding:.17rem .45rem;border-radius:5px;transition:all .12s}
+.refresh-btn:hover{background:var(--bg3);color:var(--text2)}
+.price-time{font-family:var(--mono);font-size:.62rem;color:var(--text4)}
+
+/* ── PAGE ── */
+.panel{display:none}.panel.active{display:block}
+.page{max-width:1440px;margin:0 auto;padding:1.4rem 1.75rem 4rem}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem}
+.sh-title{font-size:.95rem;font-weight:600;letter-spacing:-.02em}
+.sh-badge{font-family:var(--mono);font-size:.65rem;color:var(--text3);background:var(--bg2);border:1px solid var(--line);border-radius:99px;padding:.11rem .6rem}
+.sh-link{cursor:pointer;font-size:.72rem;color:var(--text3);border-bottom:1px dashed var(--line2);transition:color .12s,border-color .12s;margin-left:.3rem}
+.sh-link:hover{color:var(--btc);border-color:var(--btc)}
+
+/* ── DASHBOARD: 2 COL ── */
+.dash-layout{display:grid;grid-template-columns:1fr 20rem;gap:.9rem;align-items:start}
+@media(max-width:1050px){.dash-layout{grid-template-columns:1fr}}
+
+/* ── HERO ── */
+.hero{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:1.6rem 1.85rem;margin-bottom:.85rem;position:relative;overflow:hidden;box-shadow:var(--sh)}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--btc),transparent 55%)}
+.hero::after{content:'₿';position:absolute;right:1.25rem;top:50%;transform:translateY(-50%);font-size:6.5rem;color:rgba(240,146,28,.03);font-family:var(--mono);font-weight:800;pointer-events:none;line-height:1}
+.hero-label{font-family:var(--sans);font-size:.68rem;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:.55rem}
+.hero-num{font-family:var(--mono);font-size:clamp(2rem,3.8vw,3.4rem);font-weight:700;letter-spacing:-.05em;line-height:1;color:var(--text);transition:color .3s}
+.hero-num.pos{color:var(--green)}.hero-num.neg{color:var(--red)}
+.hero-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.65rem}
+.chip{font-family:var(--mono);font-size:.7rem;font-weight:500;padding:.2rem .72rem;border-radius:99px;display:inline-flex;align-items:center;gap:.3rem}
+.chip.neutral{background:var(--bg3);border:1px solid var(--line2);color:var(--text2)}
+.chip.pos{background:var(--green-bg);border:1px solid var(--green-brd);color:var(--green)}
+.chip.neg{background:var(--red-bg);border:1px solid var(--red-brd);color:var(--red)}
+.hero-strip{display:flex;gap:0;align-items:stretch;border-top:1px solid var(--line);margin-top:1.2rem;padding-top:1.05rem;flex-wrap:wrap}
+.hstat{flex:1;min-width:7rem;padding:0 1.1rem;border-right:1px solid var(--line)}
+.hstat:first-child{padding-left:0}.hstat:last-child{border-right:none}
+.hstat-lbl{font-family:var(--sans);font-size:.7rem;color:var(--text3);margin-bottom:.22rem;white-space:nowrap}
+.hstat-val{font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--text);letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hstat-val.btc{color:var(--btc)}.hstat-val.muted{color:var(--text2);font-weight:400;font-size:.92rem}
+.hstat-sub{font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:.15rem;white-space:nowrap}
+.hstat.clickable{cursor:pointer;transition:background .12s;border-radius:var(--r-sm);padding:.2rem 1.1rem}
+.hstat.clickable:hover .hstat-val{color:var(--btc)}
+
+/* ── CALC FLOW ── */
+.calc-flow{display:flex;align-items:stretch;background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:.85rem;overflow-x:auto}
+.cf-step{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:1rem 1.1rem;border-right:1px solid var(--line);transition:background .2s}
+.cf-step:last-child{border-right:none}
+.cf-step:hover{background:var(--bg2)}
+.cf-step.cf-main{background:rgba(240,146,28,.04)}
+.cf-step.cf-result{background:linear-gradient(160deg,rgba(74,222,128,.06),var(--bg1) 70%);border-left:2px solid var(--green)}
+.cf-step.cf-result.neg{background:linear-gradient(160deg,rgba(248,113,113,.06),var(--bg1) 70%);border-left-color:var(--red)}
+.cf-label{font-family:var(--sans);font-size:.62rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:.32rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-val{font-family:var(--mono);font-size:clamp(.9rem,1.3vw,1.2rem);font-weight:700;color:var(--text);letter-spacing:-.03em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-val.btc{color:var(--btc)}.cf-val.green{color:var(--green)}.cf-val.red{color:var(--red)}.cf-val.amber{color:var(--amber)}.cf-val.dim{color:var(--text3)}
+.cf-sub{font-family:var(--mono);font-size:.62rem;color:var(--text3);margin-top:.28rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-arrow{display:flex;align-items:center;justify-content:center;padding:0 .45rem;font-size:.95rem;color:var(--text4);flex-shrink:0;font-family:var(--mono);background:var(--bg1);border-right:1px solid var(--line)}
+
+/* ── SIDE PANEL ── */
+.side-panel{display:flex;flex-direction:column;gap:.72rem}
+.side-card{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:1.05rem 1.2rem;box-shadow:var(--sh)}
+.side-title{font-family:var(--sans);font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.72rem;padding-bottom:.6rem;border-bottom:1px solid var(--line)}
+.side-row{display:flex;align-items:baseline;justify-content:space-between;padding:.44rem 0;border-bottom:1px solid var(--line);gap:.5rem;min-width:0}
+.side-row:last-child{border-bottom:none}
+.side-row.clickable{cursor:pointer;transition:background .12s;border-radius:var(--r-sm);padding:.44rem .3rem;margin:0 -.3rem}
+.side-row.clickable:hover .side-val{color:var(--btc)}
+.side-lbl{font-family:var(--sans);font-size:.8rem;color:var(--text2);flex-shrink:0;white-space:nowrap}
+.side-val{font-family:var(--mono);font-size:.84rem;font-weight:600;color:var(--text);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.side-val.green{color:var(--green)}.side-val.red{color:var(--red)}.side-val.btc{color:var(--btc)}.side-val.amber{color:var(--amber)}.side-val.dim{color:var(--text3);font-weight:400}
+.side-val.lg{font-size:1rem;letter-spacing:-.03em}
+.side-row-accent{padding-top:.65rem!important;border-top:1px solid var(--line2)!important;border-bottom:none!important}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid var(--line);margin:1.3rem 0}
+
+/* ── FORM BOX ── */
+.formbox{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:1.2rem 1.4rem;box-shadow:var(--sh)}
+.form-title{font-family:var(--sans);font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.9rem;display:flex;align-items:center;gap:.65rem}
+.form-title::after{content:'';flex:1;height:1px;background:var(--line)}
+.frow{display:flex;gap:.72rem;align-items:flex-end;flex-wrap:wrap}
+.fld{display:flex;flex-direction:column;gap:.28rem;flex:1;min-width:0}
+.fld label{font-family:var(--sans);font-size:.75rem;font-weight:500;color:var(--text2)}
+.fld input{background:var(--bg2);border:1px solid var(--line2);color:var(--text);font-family:var(--mono);font-size:.86rem;padding:.58rem .78rem;border-radius:var(--r-sm);outline:none;width:100%;transition:border-color .15s,box-shadow .15s}
+.fld input:focus{border-color:var(--btc);box-shadow:0 0 0 3px var(--btc-dim)}
+.fld input:hover:not(:focus){border-color:var(--line3)}
+.fld input::placeholder{color:var(--text4)}
+input[type="date"]{width:155px;min-width:155px;flex-shrink:0;font-family:var(--mono)}
+input[type="date"]::-webkit-calendar-picker-indicator{opacity:.45;filter:invert(1);cursor:pointer}
+.fhint{font-family:var(--mono);font-size:.68rem;color:var(--text3);font-style:italic;margin-top:.12rem;min-height:.85rem}
+.btn-add{background:var(--btc);color:#000;border:none;border-radius:var(--r-sm);padding:.58rem 1.4rem;font-family:var(--sans);font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-end;transition:background .15s;flex-shrink:0;box-shadow:0 0 12px var(--btc-dim)}
+.btn-add:hover{background:#d98218}
+
+/* ── CORRBOX ── */
+.corrbox{background:var(--bg1);border:1px solid var(--amber-brd);border-left:3px solid var(--amber);border-radius:var(--r);padding:1.2rem 1.4rem;margin-top:.82rem;box-shadow:var(--sh)}
+.corrbox .form-title{color:var(--amber)}.corrbox .form-title::after{background:var(--amber-brd)}
+.corrbox-desc{font-family:var(--sans);font-size:.8rem;color:var(--text2);margin-bottom:.88rem;line-height:1.65}
+.corrbox-desc b{color:var(--text);font-weight:600}
+.btn-corr{background:transparent;border:1px solid var(--amber-brd);color:var(--amber);border-radius:var(--r-sm);padding:.58rem 1.2rem;font-family:var(--sans);font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;align-self:flex-end;transition:all .15s;flex-shrink:0}
+.btn-corr:hover{background:var(--amber-bg);border-color:var(--amber)}
+.corr-sum{display:none;gap:1.2rem;flex-wrap:wrap;align-items:center;margin-top:.72rem;padding:.48rem .82rem;background:var(--bg2);border-radius:var(--r-sm);border:1px solid var(--amber-brd);font-family:var(--mono);font-size:.7rem;color:var(--text2)}
+.corr-sum b{color:var(--amber);font-weight:700}
+
+/* ── RATE PREVIEW ── */
+.rate-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--btc-dim);border:1px solid var(--btc-brd);border-radius:var(--r-sm);padding:.48rem .88rem;min-width:100px;align-self:flex-end;flex-shrink:0}
+.rp-label{font-family:var(--sans);font-size:.58rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--btc);margin-bottom:.12rem;opacity:.7}
+.rp-val{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--btc);letter-spacing:-.03em;line-height:1.1}
+.rp-sub{font-family:var(--mono);font-size:.58rem;color:var(--btc);opacity:.5;margin-top:.08rem}
+
+/* ── TABLE BOX ── */
+.tbox{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.tbox-hdr{padding:.8rem 1.2rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:.65rem;background:var(--bg2)}
+.tbox-hdr-title{font-family:var(--sans);font-size:.82rem;font-weight:600;color:var(--text2)}
+.btn-del-all{font-family:var(--sans);font-size:.72rem;font-weight:500;padding:.28rem .82rem;border-radius:var(--r-sm);border:1px solid var(--red-brd);background:transparent;color:var(--red);cursor:pointer;transition:all .12s}
+.btn-del-all:hover{background:var(--red-bg)}
+.delbtn{background:transparent;border:1px solid var(--line2);border-radius:4px;padding:.18rem .52rem;font-size:.62rem;color:var(--text3);cursor:pointer;transition:all .12s;font-family:var(--mono)}
+.delbtn:hover{background:var(--red-bg);border-color:var(--red-brd);color:var(--red)}
+
+/* ── STORICO ACCORDION ── */
+details.yr-group{border-bottom:1px solid var(--line)}
+details.yr-group:last-child{border-bottom:none}
+details.yr-group summary{list-style:none;display:flex;align-items:center;gap:.7rem;padding:.82rem 1.2rem;cursor:pointer;user-select:none;transition:background .12s}
+details.yr-group summary::-webkit-details-marker{display:none}
+details.yr-group summary:hover{background:var(--bg2)}
+details.yr-group[open] summary{background:var(--bg2)}
+.yr-arrow{font-size:.6rem;color:var(--text3);flex-shrink:0;transition:transform .2s}
+details.yr-group[open] .yr-arrow{transform:rotate(90deg)}
+.yr-label{font-family:var(--mono);font-size:.84rem;font-weight:700;color:var(--text)}
+.yr-meta{margin-left:auto;display:flex;gap:1.4rem;font-family:var(--mono);font-size:.75rem;color:var(--text3);align-items:center;flex-wrap:wrap}
+.yr-meta .pos{color:var(--green);font-weight:600}.yr-meta .neg{color:var(--red);font-weight:600}
+.yr-table{border-top:1px solid var(--line);background:var(--bg);overflow-x:auto}
+table.inner-t{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.8rem;min-width:500px}
+table.inner-t thead{background:var(--bg2)}
+table.inner-t thead th{padding:.62rem 1.05rem;font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--line);white-space:nowrap;text-align:right}
+table.inner-t thead th:first-child{text-align:left;padding-left:2.4rem}
+table.inner-t tbody tr{border-bottom:1px solid var(--line);transition:background .1s}
+table.inner-t tbody tr:last-child{border-bottom:none}
+table.inner-t tbody tr:hover{background:var(--bg2)}
+table.inner-t td{padding:.78rem 1.05rem;text-align:right;white-space:nowrap;color:var(--text)}
+table.inner-t td:first-child{text-align:left;padding-left:2.4rem}
+.t-n{color:var(--text3);font-size:.68rem}.t-date{color:var(--text2)}.t-eur{font-weight:600}.t-btc{color:var(--btc);font-weight:600}.t-rate{color:var(--text3)}
+.t-pos{color:var(--green);font-weight:600}.t-neg{color:var(--red);font-weight:600}
+
+/* Totali storico */
+.tbox-foot{padding:.82rem 1.2rem;border-top:2px solid var(--line2);background:var(--bg2);display:flex;gap:2rem;align-items:baseline;flex-wrap:wrap}
+.f-lbl{font-family:var(--sans);font-size:.62rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.f-val{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text)}
+.f-val.btc{color:var(--btc)}.f-dim{font-family:var(--mono);font-size:.76rem;color:var(--text3)}
+
+/* Vendita badge nello storico */
+.lot-sold-bar{margin-top:.3rem;display:flex;align-items:center;gap:.45rem}
+.lot-bar-track{flex:1;max-width:75px;height:3px;background:var(--bg3);border-radius:99px;overflow:hidden}
+.lot-bar-fill{height:100%;border-radius:99px}
+.lot-sold-label{font-family:var(--mono);font-size:.6rem}
+
+/* ── CORREZIONI TABLE ── */
+.corr-tbox{background:var(--bg1);border:1px solid var(--amber-brd);border-radius:var(--r);overflow:hidden;margin-top:1rem;box-shadow:var(--sh)}
+.corr-tbox-hdr{padding:.68rem 1.2rem;border-bottom:1px solid var(--amber-brd);display:flex;align-items:center;justify-content:space-between;background:var(--amber-bg)}
+.ct-title{font-family:var(--sans);font-size:.78rem;font-weight:600;color:var(--amber)}
+table.corr-t{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.8rem}
+table.corr-t thead th{padding:.6rem 1.05rem;text-align:right;font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border-bottom:1px solid var(--amber-brd)}
+table.corr-t thead th:first-child{text-align:left}
+table.corr-t tbody tr{border-bottom:1px solid var(--line)}
+table.corr-t tbody tr:last-child{border-bottom:none}
+table.corr-t tbody tr:hover{background:rgba(251,191,36,.03)}
+table.corr-t td{padding:.72rem 1.05rem;text-align:right;white-space:nowrap;color:var(--text)}
+table.corr-t td:first-child{text-align:left}
+table.corr-t tfoot td{padding:.72rem 1.05rem;text-align:right;font-weight:700;font-size:.82rem;background:var(--amber-bg);border-top:2px solid var(--amber-brd)}
+table.corr-t tfoot td:first-child{text-align:left;font-family:var(--sans);font-size:.62rem;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+.cd-pos{color:var(--green);font-weight:700}.cd-neg{color:var(--red);font-weight:700}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:3rem 1.25rem;color:var(--text3);font-family:var(--sans);font-size:.82rem;line-height:2}
+.empty-icon{font-size:2rem;display:block;margin-bottom:.65rem;opacity:.12}
+.go-dash{display:inline-flex;align-items:center;gap:.4rem;margin-top:.72rem;font-size:.78rem;font-weight:500;color:var(--btc);background:none;border:1px solid var(--btc-brd);border-radius:var(--r-sm);padding:.32rem .88rem;cursor:pointer;transition:all .15s;font-family:var(--sans)}
+.go-dash:hover{background:var(--btc-dim)}
+.link-to{cursor:pointer;border-bottom:1px dashed var(--line2);transition:color .12s,border-color .12s}
+.link-to:hover{color:var(--btc);border-color:var(--btc)}
+
+/* ── STORICO layout 2 colonne ── */
+.stor-layout{display:grid;grid-template-columns:1fr 19rem;gap:.9rem;align-items:start}
+@media(max-width:1050px){.stor-layout{grid-template-columns:1fr}}
+.stor-side{display:flex;flex-direction:column;gap:.72rem}
+
+/* Correzioni dentro side-card */
+.side-card table.corr-t{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.78rem}
+.side-card table.corr-t td{padding:.5rem .3rem;border-bottom:1px solid var(--line);vertical-align:middle}
+.side-card table.corr-t tr:last-child td{border-bottom:none}
+.side-card .corr-date{color:var(--text2);font-size:.72rem;white-space:nowrap}
+.side-card .corr-reason{color:var(--text2);font-size:.75rem;font-family:var(--sans);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-card .corr-delta{text-align:right;font-weight:700;white-space:nowrap}
+
+.sim-layout{display:grid;grid-template-columns:1fr 21rem;gap:.9rem;align-items:start}
+@media(max-width:1050px){.sim-layout{grid-template-columns:1fr}}
+.sim-main{display:flex;flex-direction:column;gap:.85rem}
+.sim-side{display:flex;flex-direction:column;gap:.72rem}
+
+/* Panoramica risultato simulatore */
+.sim-overview{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.sim-ov-hdr{padding:1.3rem 1.6rem;border-bottom:1px solid var(--line)}
+.sim-ov-hero{display:flex;gap:1.25rem;align-items:flex-start;flex-wrap:wrap}
+.sim-ov-main{flex:1}
+.sim-res-label{font-family:var(--sans);font-size:.65rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem}
+.sim-res-num{font-family:var(--mono);font-size:clamp(1.5rem,2.8vw,2.2rem);font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--text)}
+.sim-res-num.pos{color:var(--green)}.sim-res-num.neg{color:var(--red)}.sim-res-num.dim{color:var(--text3)}
+.sim-res-sub{font-family:var(--mono);font-size:.7rem;color:var(--text3);margin-top:.38rem}
+.sim-tax-box{background:var(--amber-bg);border:1px solid var(--amber-brd);border-radius:var(--r-sm);padding:.78rem 1rem;flex-shrink:0;min-width:10rem}
+.sim-tax-box .sim-res-num{font-size:1.5rem;color:var(--amber)}
+.sim-tax-box.muted{opacity:.5}
+/* Flow numerico */
+.sim-ov-flow{display:flex;align-items:center;padding:1rem 1.6rem;background:var(--bg2);flex-wrap:wrap;gap:.4rem 0}
+.sof-item{padding:0 1.05rem;min-width:0}
+.sof-item:first-child{padding-left:0}
+.sof-lbl{font-family:var(--sans);font-size:.62rem;color:var(--text3);margin-bottom:.18rem;white-space:nowrap}
+.sof-val{font-family:var(--mono);font-size:.9rem;font-weight:700;color:var(--text);white-space:nowrap}
+.sof-val.btc{color:var(--btc)}.sof-val.pos{color:var(--green)}.sof-val.neg{color:var(--red)}.sof-val.amber{color:var(--amber)}.sof-val.dim{color:var(--text3)}
+.sof-sep{font-family:var(--mono);font-size:.9rem;color:var(--text4);padding:0 .28rem;flex-shrink:0}
+/* Note */
+.sim-note{padding:.65rem 1.6rem;font-family:var(--sans);font-size:.78rem;color:var(--text3);border-top:1px solid var(--line);font-style:italic;background:var(--bg1)}
+
+/* ── Sim panoramica hero row ── */
+#simOverview{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.sim-hero-row{display:flex;gap:0;align-items:stretch;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.sim-hero-block{flex:1;min-width:140px;padding:1.3rem 1.5rem;border-right:1px solid var(--line)}
+.sim-hero-block:last-child{border-right:none}
+.sim-hero-tax{background:var(--amber-bg);border-color:var(--amber-brd)!important}
+.sim-hero-label{font-family:var(--sans);font-size:.63rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:.38rem}
+.sim-hero-num{font-family:var(--mono);font-size:clamp(1.3rem,2.5vw,2rem);font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--text)}
+.sim-hero-num.pos{color:var(--green)}.sim-hero-num.neg{color:var(--red)}.sim-hero-num.amber{color:var(--amber)}.sim-hero-num.dim{color:var(--text3)}.sim-hero-num.btc{color:var(--btc)}
+.sim-hero-sub{font-family:var(--mono);font-size:.68rem;color:var(--text3);margin-top:.35rem}
+/* ── Sim flow strip (like dash calc-flow) ── */
+.sim-flow-strip{display:flex;align-items:stretch;background:var(--bg2);flex-wrap:wrap;overflow-x:auto}
+.sim-flow-item{flex:1;min-width:0;padding:.85rem 1rem;border-right:1px solid var(--line)}
+.sim-flow-item:last-child{border-right:none}
+.sim-flow-item.sf-result{background:linear-gradient(160deg,rgba(74,222,128,.05),var(--bg2) 70%);border-left:2px solid var(--green)}
+.sf-lbl{font-family:var(--sans);font-size:.62rem;color:var(--text3);margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sf-val{font-family:var(--mono);font-size:clamp(.82rem,1.1vw,1rem);font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sf-val.btc{color:var(--btc)}.sf-val.green{color:var(--green)}.sf-val.red{color:var(--red)}.sf-val.amber{color:var(--amber)}.sf-val.dim{color:var(--text3);font-weight:400}
+.sf-sub{font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sf-op{display:flex;align-items:center;justify-content:center;padding:0 .4rem;font-family:var(--mono);font-size:.9rem;color:var(--text4);flex-shrink:0;background:var(--bg2)}
+.rt-val.red{color:var(--red)}
+
+/* Tabella FIFO */
+.tbox-fifo{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+table.fifo-t{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.8rem;min-width:480px}
+table.fifo-t thead{background:var(--bg2)}
+table.fifo-t thead th{padding:.6rem 1.05rem;text-align:right;font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--line);white-space:nowrap}
+table.fifo-t thead th:first-child{text-align:left}
+table.fifo-t tbody tr{border-bottom:1px solid var(--line);transition:background .1s}
+table.fifo-t tbody tr:last-child{border-bottom:none}
+table.fifo-t tbody tr:hover{background:var(--bg2)}
+table.fifo-t td{padding:.72rem 1.05rem;text-align:right;white-space:nowrap;color:var(--text)}
+table.fifo-t td:first-child{text-align:left}
+table.fifo-t tfoot td{padding:.72rem 1.05rem;text-align:right;font-weight:700;background:var(--bg2);border-top:2px solid var(--line2);font-size:.82rem}
+table.fifo-t tfoot td:first-child{text-align:left;font-family:var(--sans);font-size:.62rem;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+.fifo-partial{background:var(--btc-dim)!important}
+.fifo-gain-pos{color:var(--green);font-weight:700}.fifo-gain-neg{color:var(--red);font-weight:700}
+.fifo-badge{font-family:var(--sans);font-size:.58rem;padding:.08rem .48rem;border-radius:99px;margin-left:.38rem;vertical-align:middle}
+.fifo-badge.full{background:var(--green-bg);border:1px solid var(--green-brd);color:var(--green)}
+.fifo-badge.partial{background:var(--btc-dim);border:1px solid var(--btc-brd);color:var(--btc)}
+
+/* Rigo RT */
+.rt-row{display:flex;align-items:baseline;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--line);gap:.5rem}
+.rt-row:last-of-type{border-bottom:none}
+.rt-lbl{font-family:var(--sans);font-size:.8rem;color:var(--text2);line-height:1.4}
+.rt-code{color:var(--btc);font-family:var(--mono);font-size:.68rem;margin-right:.35rem}
+.rt-val{font-family:var(--mono);font-size:.85rem;font-weight:600;color:var(--text);text-align:right}
+.rt-val.amber{color:var(--amber)}.rt-val.pos{color:var(--green)}.rt-val.dim{color:var(--text3);font-weight:400}
+
+/* Bottone applica */
+.btn-apply{width:100%;padding:.9rem 1.4rem;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:var(--sans);font-size:.92rem;font-weight:700;cursor:pointer;letter-spacing:-.01em;box-shadow:0 0 20px rgba(74,222,128,.18);transition:all .15s}
+.btn-apply:hover{background:#38d670}
+
+/* Storico vendite nel simulatore */
+.sale-row{display:flex;align-items:center;gap:.65rem;padding:.72rem 1.2rem;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.78rem;transition:background .1s}
+.sale-row:last-child{border-bottom:none}
+.sale-row:hover{background:var(--bg2)}
+/* Dashboard vendite list */
+.sv-sale-row{display:flex;justify-content:space-between;align-items:center;padding:.38rem .35rem;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background .12s;gap:.5rem}
+.sv-sale-row:last-child{border-bottom:none}
+.sv-sale-row:hover{background:var(--bg2)}
+.sv-sale-date{font-family:var(--mono);font-size:.7rem;color:var(--text3);flex-shrink:0}
+.sv-sale-btc{font-family:var(--mono);font-size:.7rem;color:var(--btc);flex-shrink:0}
+.sv-sale-gain{font-family:var(--mono);font-size:.7rem;font-weight:700;text-align:right;flex:1}
+.sv-sale-arr{font-family:var(--mono);font-size:.62rem;color:var(--text4);flex-shrink:0}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:1.6rem 1.8rem;max-width:26rem;width:92%;box-shadow:0 24px 64px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal h3{flex-shrink:0}.modal .modal-btns{flex-shrink:0;margin-top:auto;padding-top:.8rem}
+.modal-icon{font-size:1.55rem;margin-bottom:.62rem}
+.modal h3{font-size:.95rem;font-weight:600;margin-bottom:.48rem;letter-spacing:-.02em}
+.modal p{font-family:var(--sans);font-size:.78rem;color:var(--text2);line-height:1.75;margin-bottom:.95rem}
+.modal textarea{width:100%;height:6.5rem;background:var(--bg3);border:1px solid var(--line2);color:var(--text);font-family:var(--mono);font-size:.7rem;border-radius:8px;padding:.6rem .8rem;resize:vertical;outline:none;margin-bottom:.82rem;display:block}
+.modal textarea:focus{border-color:var(--btc)}
+.modal-btns{display:flex;gap:.45rem;justify-content:flex-end}
+.mbtn{font-family:var(--sans);font-size:.78rem;font-weight:500;padding:.42rem .92rem;border-radius:var(--r-sm);border:1px solid var(--line2);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s}
+.mbtn:hover{background:var(--bg3);color:var(--text)}
+.mbtn.ok{background:var(--btc);border-color:var(--btc);color:#000;font-weight:700}.mbtn.ok:hover{background:#d98218}
+.mbtn.danger{border-color:var(--red-brd);color:var(--red)}.mbtn.danger:hover{background:var(--red-bg)}
+.drop-zone{border:2px dashed var(--line2);border-radius:var(--r-sm);padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:.82rem;background:var(--bg3)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--btc);background:var(--btc-dim)}
+.drop-zone.ok{border-color:var(--green);background:var(--green-bg)}
+.drop-icon{font-size:1.4rem;opacity:.3;margin-bottom:.38rem}
+.drop-main{font-family:var(--sans);font-size:.78rem;color:var(--text2);font-weight:500}
+.drop-sub{font-family:var(--sans);font-size:.68rem;color:var(--text3);margin-top:.15rem}
+.drop-name{font-family:var(--mono);font-size:.7rem;color:var(--green);margin-top:.6rem;display:none}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.2rem;right:1.2rem;border-radius:8px;padding:.58rem 1rem;font-family:var(--sans);font-size:.8rem;font-weight:500;z-index:999;pointer-events:none;opacity:0;transform:translateY(5px) scale(.97);transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:none}
+.toast.ok{background:#14532d;color:var(--green);border:1px solid var(--green-brd)}
+.toast.err{background:#450a0a;color:var(--red);border:1px solid var(--red-brd)}
+.toast.warn{background:#451a03;color:var(--amber);border:1px solid var(--amber-brd)}
+.toast.info{background:var(--bg2);color:var(--text);border:1px solid var(--line2)}
+
+/* ── CORREZIONI STORICO — card migliorata ── */
+.corr-card{background:var(--bg1);border:1px solid var(--amber-brd);border-left:4px solid var(--amber);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.corr-card-hdr{display:flex;align-items:center;gap:.6rem;padding:.82rem 1.1rem;background:linear-gradient(90deg,var(--amber-bg),transparent 70%);border-bottom:1px solid var(--amber-brd)}
+.corr-card-title{font-family:var(--sans);font-size:.78rem;font-weight:700;color:var(--amber);letter-spacing:.02em;flex:1}
+.corr-card-count{font-family:var(--mono);font-size:.65rem;background:var(--amber-bg);border:1px solid var(--amber-brd);color:var(--amber);padding:.12rem .55rem;border-radius:99px}
+.corr-card-add{font-family:var(--sans);font-size:.72rem;color:var(--text3);background:none;border:1px solid var(--line2);border-radius:var(--r-sm);padding:.2rem .6rem;cursor:pointer;transition:all .12s;white-space:nowrap}
+.corr-card-add:hover{color:var(--amber);border-color:var(--amber-brd)}
+.corr-card-del{font-family:var(--mono);font-size:.72rem;padding:.2rem .6rem;border-radius:var(--r-sm);border:1px solid var(--red-brd);background:transparent;color:var(--red);cursor:pointer;transition:all .12s}
+.corr-card-del:hover{background:var(--red-bg)}
+
+/* Tabella correzioni nel storico */
+table.corr-t2{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.78rem}
+table.corr-t2 thead tr{background:var(--bg2)}
+table.corr-t2 thead th{padding:.55rem 1rem;font-family:var(--sans);font-size:.6rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);border-bottom:1px solid var(--amber-brd);text-align:left}
+table.corr-t2 thead th:last-child{text-align:right}
+table.corr-t2 tbody tr{border-bottom:1px solid var(--line);transition:background .1s}
+table.corr-t2 tbody tr:last-child{border-bottom:none}
+table.corr-t2 tbody tr:hover{background:rgba(251,191,36,.03)}
+table.corr-t2 td{padding:.65rem 1rem;vertical-align:middle}
+table.corr-t2 .c2-date{color:var(--text2);white-space:nowrap;font-size:.76rem}
+table.corr-t2 .c2-reason{color:var(--text2);font-family:var(--sans);font-size:.78rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.corr-t2 .c2-delta{text-align:right;font-weight:700;white-space:nowrap;font-size:.82rem}
+table.corr-t2 .c2-del{text-align:right;padding-right:.8rem}
+table.corr-t2 tfoot td{padding:.62rem 1rem;background:var(--amber-bg);border-top:2px solid var(--amber-brd);font-weight:700;font-size:.8rem}
+table.corr-t2 tfoot .c2-tot-lbl{font-family:var(--sans);font-size:.62rem;font-weight:400;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+
+/* Toast più visibili */
+.toast{min-width:14rem;max-width:22rem}
+.toast.ok{background:#052e16;color:#86efac;border:1px solid #166534}
+.toast.err{background:#2d0404;color:#fca5a5;border:1px solid #991b1b;font-weight:600}
+.toast.warn{background:#1c1003;color:#fde68a;border:1px solid #92400e}
+
+/* Hstat pos/neg */
+.hstat-val.pos{color:var(--green)}.hstat-val.neg{color:var(--red)}
+
+/* Side-card title colored variants */
+.side-title.green{color:var(--green)}.side-title.red{color:var(--red)}.side-title.btc{color:var(--btc)}
+
+/* Accordion anno — bordo sinistra colorato in base a gain */
+details.yr-group.yr-pos > summary{border-left:3px solid var(--green)}
+details.yr-group.yr-neg > summary{border-left:3px solid var(--red)}
+details.yr-group > summary{border-left:3px solid transparent;padding-left:calc(1.2rem - 3px)}
+
+/* Footer storico — migliore contrasto */
+.tbox-foot{border-top:2px solid var(--amber-brd)}
+.f-val.pos{color:var(--green)}.f-val.neg{color:var(--red)}
+
+/* Btn-add hover micro-feedback */
+.btn-add:active{transform:scale(.97)}
+.btn-corr:active{transform:scale(.97)}
+
+/* Side-row accent più visibile */
+.side-row-accent{background:rgba(255,255,255,.015);border-radius:var(--r-sm);padding:.65rem .4rem!important;margin:0 -.4rem}
+
+/* Empty corr in card */
+.corr-empty{padding:1.2rem 1rem;font-family:var(--sans);font-size:.78rem;color:var(--text3);font-style:italic}
+
+/* Chip amber per vendite */
+.chip.amber{background:var(--amber-bg);border:1px solid var(--amber-brd);color:var(--amber)}
+
+/* FIFO tabella — miglior hover riga */
+table.fifo-t tbody tr:hover{background:var(--bg2)}
+
+/* Pricebar vs-carico più visibile */
+#priceVsAvg{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:.22rem .65rem}
+
+/* ── FISCAL YEAR TABLE ══ */
+.fy-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.78rem}
+.fy-table thead th{padding:.5rem .75rem;font-family:var(--sans);font-size:.6rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--line);text-align:right}
+.fy-table thead th:first-child{text-align:left}
+.fy-table tbody tr{border-bottom:1px solid var(--line);transition:background .1s}
+.fy-table tbody tr:last-child{border-bottom:none}
+.fy-table tbody tr:hover{background:var(--bg2)}
+.fy-table td{padding:.6rem .75rem;text-align:right;white-space:nowrap}
+.fy-table td:first-child{text-align:left;font-weight:600;color:var(--text2)}
+.fy-table .fy-pos{color:var(--green);font-weight:700}
+.fy-table .fy-neg{color:var(--red);font-weight:700}
+.fy-table .fy-amber{color:var(--amber);font-weight:700}
+.fy-table .fy-dim{color:var(--text3);font-weight:400}
+.fy-table tfoot td{padding:.6rem .75rem;text-align:right;background:var(--bg2);border-top:2px solid var(--line2);font-weight:700}
+.fy-table tfoot td:first-child{text-align:left;font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);font-weight:400}
+
+/* Alert box fiscale */
+.fiscal-alert{border-radius:var(--r-sm);padding:.75rem 1rem;display:flex;gap:.65rem;align-items:flex-start;font-family:var(--sans);font-size:.78rem;line-height:1.6}
+.fiscal-alert.warn{background:var(--amber-bg);border:1px solid var(--amber-brd);color:var(--text2)}
+.fiscal-alert.info{background:var(--green-bg);border:1px solid var(--green-brd);color:var(--text2)}
+.fiscal-alert.neutral{background:var(--bg2);border:1px solid var(--line2);color:var(--text2)}
+.fiscal-alert-icon{font-size:1rem;flex-shrink:0;margin-top:.05rem}
+
+/* ── HOLDING DECLARATION TABLE ── */
+table.holding-t{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.8rem;min-width:700px}
+table.holding-t thead tr{background:var(--bg2)}
+table.holding-t thead th{padding:.6rem 1rem;font-family:var(--sans);font-size:.6rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.holding-t thead th:first-child{text-align:left}
+table.holding-t tbody tr{border-bottom:1px solid var(--line);transition:background .1s}
+table.holding-t tbody tr:last-child{border-bottom:none}
+table.holding-t tbody tr:hover{background:var(--bg2)}
+table.holding-t td{padding:.6rem 1rem;text-align:right;vertical-align:middle}
+table.holding-t td:first-child{text-align:left;font-weight:600;color:var(--text2)}
+table.holding-t input.price-inp{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);color:var(--text);font-family:var(--mono);font-size:.78rem;padding:.28rem .55rem;width:8rem;text-align:right;outline:none;transition:border-color .15s}
+table.holding-t input.price-inp:focus{border-color:var(--btc)}
+table.holding-t .hd-btc{color:var(--btc);font-weight:700}
+table.holding-t .hd-val{color:var(--text);font-weight:600}
+table.holding-t .hd-ivafe{color:var(--amber);font-weight:700}
+table.holding-t .hd-ivafe.none{color:var(--text3);font-weight:400}
+table.holding-t .hd-rw{color:var(--green);font-size:.72rem}
+table.holding-t .hd-note{text-align:left;padding-left:.5rem;font-family:var(--sans);font-size:.72rem;color:var(--text3);white-space:normal;max-width:180px}
+table.holding-t tfoot td{padding:.6rem 1rem;text-align:right;background:var(--bg2);border-top:2px solid var(--line2);font-weight:700}
+table.holding-t tfoot td:first-child{text-align:left;font-family:var(--sans);font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);font-weight:400}
+.yr-tag{display:inline-block;font-family:var(--sans);font-size:.65rem;padding:.1rem .45rem;border-radius:99px;margin-left:.4rem;vertical-align:middle}
+.yr-tag.active{background:var(--green-bg);border:1px solid var(--green-brd);color:var(--green)}
+.yr-tag.past{background:var(--bg3);border:1px solid var(--line2);color:var(--text3)}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.card-anim{animation:fadeUp .3s ease both}
+
+@media(max-width:768px){
+  .topbar,.pricebar,.page{padding-left:1rem;padding-right:1rem}
+  .hero-num{font-size:2rem}
+  .frow{flex-direction:column}
+  .btn-add,.btn-corr{width:100%;text-align:center}
+  input[type="date"]{width:100%!important;min-width:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="logo"><div class="logo-mark">₿</div>BTC Tracker</div>
+  <nav class="tabs">
+    <button class="tab active" id="tab-dash" onclick="switchTab('dash')">Dashboard</button>
+    <button class="tab"        id="tab-stor" onclick="switchTab('stor')">Storico</button>
+    <button class="tab"        id="tab-730"  onclick="switchTab('730')">Fiscalità</button>
+  </nav>
+  <div class="topbar-right">
+    <div class="save-info"><div class="save-dot"></div><span id="saveLabel">non salvato</span></div>
+    <button class="tbtn" onclick="openImport()">⬆ Importa</button>
+    <button class="tbtn" onclick="doExportCSV()">⬇ CSV</button>
+    <button class="tbtn primary" onclick="doExportJSON()" title="Scarica il file JSON con tutti i tuoi dati">⬇ Salva JSON</button>
+  </div>
+</div>
+
+<!-- ══ PRICEBAR ══ -->
+<div class="pricebar">
+  <div class="pitem">
+    <span class="ptag">BTC</span>
+    <input type="number" id="btcPrice" class="pinp" value="84000" step="100" min="0">
+    <span class="punit">€ / BTC</span>
+  </div>
+  <div class="pdiv"></div>
+  <div style="display:flex;align-items:center;gap:.6rem">
+    <div class="live-badge loading" id="liveBadge"><span class="live-dot"></span><span id="liveLabel">caricamento...</span></div>
+    <button class="refresh-btn" onclick="fetchPrice()">↻ aggiorna</button>
+    <span class="price-time" id="priceTime"></span>
+  </div>
+  <div class="pdiv"></div>
+  <div class="pitem" id="priceVsAvg" style="display:none">
+    <span class="ptag">vs carico</span>
+    <span id="priceVsAvgVal" style="font-family:var(--mono);font-size:.85rem;font-weight:600"></span>
+  </div>
+</div>
+
+<!-- ══ PAGE ══ -->
+<div class="page">
+
+<!-- ════════════ TAB 1: DASHBOARD ════════════ -->
+<div class="panel active" id="panel-dash">
+  <div class="sh">
+    <div class="sh-title">Portafoglio</div>
+    <div class="sh-badge link-to" id="d_badge" onclick="switchTab('stor')" title="Vai allo storico"></div>
+  </div>
+
+  <div class="dash-layout">
+
+    <!-- COLONNA SINISTRA: panoramica + form -->
+    <div>
+      <!-- Hero -->
+      <div class="hero card-anim">
+        <div class="hero-label">Valore attuale portafoglio BTC</div>
+        <div style="display:flex;align-items:baseline;gap:1.1rem;flex-wrap:wrap">
+          <div class="hero-num" id="h_val">€ 0,00</div>
+          <div class="hero-chips" id="h_chips"></div>
+        </div>
+        <div class="hero-strip">
+          <div class="hstat">
+            <div class="hstat-lbl">Capitale residuo</div>
+            <div class="hstat-val" id="h_inv">—</div>
+            <div class="hstat-sub" id="h_inv_sub"></div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-lbl">BTC posseduti</div>
+            <div class="hstat-val btc" id="h_btc">—</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-lbl">Prezzo carico medio</div>
+            <div class="hstat-val" id="h_avg">—</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-lbl">Multiplo</div>
+            <div class="hstat-val" id="h_mult">—</div>
+          </div>
+          <div class="hstat clickable" onclick="switchTab('stor')" title="Vai allo storico">
+            <div class="hstat-lbl">Acquisti <span style="font-size:.62rem;color:var(--text4)">↗</span></div>
+            <div class="hstat-val muted link-to" id="h_nbuys">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flusso calcolo -->
+      <div class="calc-flow card-anim" id="calcFlow">
+        <div class="cf-step">
+          <div class="cf-label">Allocato</div>
+          <div class="cf-val" id="cf_inv">—</div>
+          <div class="cf-sub" id="cf_inv_sub">in BTC</div>
+        </div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-step cf-main">
+          <div class="cf-label">Valore BTC</div>
+          <div class="cf-val btc" id="cf_val">—</div>
+          <div class="cf-sub" id="cf_val_sub">—</div>
+        </div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-step">
+          <div class="cf-label">Guadagno lordo</div>
+          <div class="cf-val" id="cf_gross">—</div>
+          <div class="cf-sub" id="cf_gross_sub">—</div>
+        </div>
+        <div class="cf-arrow">−</div>
+        <div class="cf-step">
+          <div class="cf-label">Tassa 26%</div>
+          <div class="cf-val" id="cf_tax">—</div>
+          <div class="cf-sub" id="cf_tax_sub">se positivo</div>
+        </div>
+        <div class="cf-arrow">=</div>
+        <div class="cf-step cf-result" id="cfstep_net">
+          <div class="cf-label">Netto finale</div>
+          <div class="cf-val" id="cf_net">—</div>
+          <div class="cf-sub" id="cf_net_sub">dopo tasse</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Form acquisto -->
+      <div class="formbox card-anim">
+        <div class="form-title">Aggiungi acquisto BTC</div>
+        <div class="frow">
+          <div class="fld" style="max-width:155px;flex:0 0 155px">
+            <label>Data acquisto</label>
+            <input type="date" id="f_date">
+          </div>
+          <div class="fld">
+            <label>Importo (€)</label>
+            <input type="number" id="f_eur" placeholder="es. 200" min="0" step="0.01">
+          </div>
+          <div class="fld">
+            <label>BTC acquistati</label>
+            <input type="number" id="f_btc" placeholder="es. 0.00238" min="0" step="0.00000001">
+          </div>
+          <div class="rate-preview" id="ratePreview" style="display:none">
+            <div class="rp-label">tasso</div>
+            <div class="rp-val" id="ratePreviewVal">—</div>
+            <div class="rp-sub">€/BTC</div>
+          </div>
+          <button class="btn-add" onclick="addRow()">+ Aggiungi</button>
+        </div>
+        <div class="fhint" id="fhint" style="margin-top:.5rem">inserisci importo e BTC → il tasso €/BTC si calcola automaticamente</div>
+      </div>
+
+      <!-- Form correzione -->
+      <div class="corrbox card-anim">
+        <div class="form-title" style="opacity:.7">⚙ Rettifica saldo BTC</div>
+        <div class="corrbox-desc">Per <b>commissioni</b> di trasferimento o fee di rete. Negativo = sottrai, positivo = aggiungi.</div>
+        <div class="frow">
+          <div class="fld" style="max-width:155px;flex:0 0 155px">
+            <label>Data</label>
+            <input type="date" id="c_date">
+          </div>
+          <div class="fld" style="max-width:200px">
+            <label>Δ BTC</label>
+            <input type="number" id="c_delta" placeholder="es. -0.000025" step="0.00000001">
+          </div>
+          <div class="fld">
+            <label>Motivo</label>
+            <input type="text" id="c_reason" placeholder="es. commissione Coinbase">
+          </div>
+          <button class="btn-corr" onclick="addCorrection()">Applica</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- COLONNA DESTRA: statistiche -->
+    <div class="side-panel">
+
+      <div class="side-card card-anim">
+        <div class="side-title">Situazione attuale</div>
+        <div class="side-row"><span class="side-lbl">Costo base BTC rimasti</span><span class="side-val" id="s_inv">—</span></div>
+        <div class="side-row" id="s_inv_all_row" style="display:none"><span class="side-lbl">Totale investito (storico)</span><span class="side-val dim" id="s_inv_all">—</span></div>
+        <div class="side-row"><span class="side-lbl">Valore attuale BTC</span><span class="side-val btc" id="s_val">—</span></div>
+        <div class="side-row"><span class="side-lbl">Guadagno lordo</span><span class="side-val" id="s_gross">—</span></div>
+        <div class="side-row"><span class="side-lbl">Tassa 26%</span><span class="side-val" id="s_tax">—</span></div>
+        <div class="side-row"><span class="side-lbl">Guadagno netto</span><span class="side-val" id="s_net">—</span></div>
+        <div class="side-row side-row-accent">
+          <span class="side-lbl" style="font-weight:600;color:var(--text)">Portafoglio netto</span>
+          <span class="side-val lg" id="s_port">—</span>
+        </div>
+      </div>
+
+      <div class="side-card card-anim">
+        <div class="side-title">Statistiche</div>
+        <div class="side-row clickable" onclick="switchTab('stor')" title="Vai allo storico">
+          <span class="side-lbl">Acquisti totali <span style="font-size:.65rem;color:var(--text4)">↗</span></span>
+          <span class="side-val dim link-to" id="s_nbuys">—</span>
+        </div>
+        <div class="side-row"><span class="side-lbl">Periodo DCA</span><span class="side-val dim" id="s_months">—</span></div>
+        <div class="side-row"><span class="side-lbl">Media / mese</span><span class="side-val" id="s_avgm">—</span></div>
+        <div class="side-row"><span class="side-lbl">Prezzo medio carico</span><span class="side-val" id="s_avgrate">—</span></div>
+        <div class="side-row"><span class="side-lbl">Prezzo attuale BTC</span><span class="side-val btc" id="s_curprice">—</span></div>
+        <div class="side-row"><span class="side-lbl">Valore portfolio ora</span><span class="side-val btc" id="s_portval">—</span></div>
+        <div class="side-row clickable" onclick="goToStorico('first')">
+          <span class="side-lbl">Primo acquisto <span style="font-size:.65rem;color:var(--text4)">↗</span></span>
+          <span class="side-val dim link-to" id="s_first">—</span>
+        </div>
+        <div class="side-row clickable" onclick="goToStorico('last')">
+          <span class="side-lbl">Ultimo acquisto <span style="font-size:.65rem;color:var(--text4)">↗</span></span>
+          <span class="side-val dim link-to" id="s_last">—</span>
+        </div>
+        <div class="side-row">
+          <span class="side-lbl">ROI totale</span>
+          <span class="side-val" id="s_roi">—</span>
+        </div>
+        <div class="side-row">
+          <span class="side-lbl">Multiplo investimento</span>
+          <span class="side-val" id="s_mult">—</span>
+        </div>
+      </div>
+
+      <!-- Vendite realizzate (appare solo se ce ne sono) -->
+      <div class="side-card card-anim" id="salesBox" style="display:none">
+        <div class="side-title" style="color:var(--amber)">Vendite realizzate
+          <span onclick="switchTab('730')" class="link-to" style="cursor:pointer;font-size:.65rem;color:var(--text4);margin-left:.5rem">↗ Vendite</span>
+        </div>
+        <div class="side-row"><span class="side-lbl">N° vendite</span><span class="side-val dim" id="sv_count">—</span></div>
+        <div class="side-row"><span class="side-lbl">BTC venduti</span><span class="side-val" id="sv_btc">—</span></div>
+        <div class="side-row"><span class="side-lbl">Ricavo totale</span><span class="side-val btc" id="sv_revenue">—</span></div>
+        <div class="side-row"><span class="side-lbl">Gain realizzato</span><span class="side-val" id="sv_gain">—</span></div>
+        <div class="side-row"><span class="side-lbl">Imposte pagate</span><span class="side-val amber" id="sv_tax">—</span></div>
+        <div class="side-row side-row-accent">
+          <span class="side-lbl" style="font-weight:600;color:var(--text)">Ricavo netto incassato</span>
+          <span class="side-val lg" id="sv_net">—</span>
+        </div>
+        <div id="sv_rows" style="margin-top:.6rem;border-top:1px solid var(--line);padding-top:.4rem"></div>
+      </div>
+
+    </div>
+  </div>
+</div><!-- /panel-dash -->
+
+
+<!-- ════════════ TAB 2: STORICO ════════════ -->
+<div class="panel" id="panel-stor">
+  <div class="sh" style="margin-bottom:.85rem">
+    <div class="sh-title">Storico acquisti</div>
+    <div class="sh-badge" id="s_count_badge"></div>
+    <span class="link-to" onclick="switchTab('dash')" style="cursor:pointer;font-size:.75rem;color:var(--text3);margin-left:auto">← Dashboard</span>
+    <span class="link-to" onclick="switchTab('730')" style="cursor:pointer;font-size:.75rem;color:var(--text3)">Fiscalità ↗</span>
+  </div>
+
+  <div class="stor-layout">
+
+    <!-- SINISTRA: acquisti -->
+    <div>
+      <div class="tbox">
+        <div class="tbox-hdr">
+          <span class="tbox-hdr-title" id="tbox-title">Nessun acquisto</span>
+          <button class="btn-del-all" onclick="confirmDelAll('acquisti')">🗑 Elimina tutti</button>
+        </div>
+        <div id="accWrap" style="overflow-x:auto"></div>
+        <div id="tbox-foot" class="tbox-foot" style="display:none">
+          <span class="f-lbl">Totali</span>
+          <span><span class="f-dim">investito </span><span class="f-val" id="ft_eur">—</span></span>
+          <span><span class="f-dim">BTC disp. </span><span class="f-val btc" id="ft_btc">—</span></span>
+          <span><span class="f-dim">€/BTC medio </span><span class="f-val f-dim" id="ft_rate">—</span></span>
+          <span><span class="f-dim">Δ attuale </span><span class="f-val" id="ft_diff">—</span></span>
+          <span><span class="f-dim">valore ora </span><span class="f-val btc" id="ft_val">—</span></span>
+          <span><span class="f-dim">break-even </span><span class="f-val f-dim" id="ft_be">—</span></span>
+        </div>
+        <div class="empty" id="emptyAcq" style="display:none">
+          <span class="empty-icon">₿</span>
+          Nessun acquisto registrato.<br>
+          <button class="go-dash" onclick="switchTab('dash')">→ Aggiungi dalla Dashboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESTRA: correzioni + riepilogo -->
+    <div class="stor-side">
+
+      <!-- Riepilogo snapshot -->
+      <div class="side-card">
+        <div class="side-title">Riepilogo portafoglio</div>
+        <div class="side-row"><span class="side-lbl">Totale investito storico</span><span class="side-val" id="stor_inv">—</span></div>
+        <div class="side-row"><span class="side-lbl">Capitale residuo (BTC poss.)</span><span class="side-val" id="stor_inv_res">—</span></div>
+        <div class="side-row"><span class="side-lbl">BTC venduti</span><span class="side-val" id="stor_sold">—</span></div>
+        <div class="side-row side-row-accent">
+          <span class="side-lbl" style="font-weight:600;color:var(--text)">BTC posseduti</span>
+          <span class="side-val lg btc" id="stor_btc_eff">—</span>
+        </div>
+        <div class="side-row"><span class="side-lbl">Prezzo medio carico</span><span class="side-val" id="stor_avg">—</span></div>
+        <div class="side-row"><span class="side-lbl">Valore attuale</span><span class="side-val btc" id="stor_val">—</span></div>
+        <div class="side-row"><span class="side-lbl">Guadagno lordo</span><span class="side-val" id="stor_gain">—</span></div>
+        <div class="side-row clickable" onclick="switchTab('730')" title="Vai a Simula/Vendi">
+          <span class="side-lbl">Simula vendita <span style="font-size:.65rem;color:var(--text4)">↗</span></span>
+          <span class="side-val dim">730</span>
+        </div>
+      </div>
+
+      <!-- Correzioni -->
+      <div class="corr-card">
+        <div class="corr-card-hdr">
+          <span style="font-size:.9rem">⚙</span>
+          <span class="corr-card-title">Correzioni saldo</span>
+          <span class="corr-card-count" id="corrCount" style="display:none">0</span>
+          <button class="corr-card-add" onclick="switchTab('dash')" title="Aggiungi una correzione dalla Dashboard">+ Aggiungi ↗</button>
+          <button class="corr-card-del" onclick="confirmDelAll('correzioni')" title="Elimina tutte le correzioni">🗑</button>
+        </div>
+        <div style="overflow-x:auto"><div id="corrWrap2"></div></div>
+        <div class="corr-empty" id="emptyCorr">Nessuna correzione registrata.</div>
+      </div>
+
+    </div><!-- /stor-side -->
+
+  </div><!-- /stor-layout -->
+</div><!-- /panel-stor -->
+
+
+<!-- ════════════ TAB 3: SIMULATORE 730 ════════════ -->
+<div class="panel" id="panel-730">
+  <div class="sh">
+    <div class="sh-title">Fiscalità &amp; Dichiarazione</div>
+    <div class="sh-badge">Cessione cripto-attività · metodo FIFO · art. 67 c.1 lett. c-sexies TUIR · aliquota 26%</div>
+  </div>
+
+  <!-- ═══ SEZIONE: DICHIARAZIONE PER IL POSSESSO ═══ -->
+  <div id="holdingDeclSection" style="display:none;margin-bottom:1.2rem">
+    <div class="sh" style="margin-bottom:.75rem">
+      <div class="sh-title" style="font-size:.9rem">Dichiarazione annuale per il possesso</div>
+      <div class="sh-badge">Quadro RW · IVAFE · obbligo monitoraggio fiscale</div>
+    </div>
+
+    <div style="background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)">
+
+      <!-- Spiegazione compatta -->
+      <div style="padding:.85rem 1.25rem;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:.6rem">
+        <div class="fiscal-alert info" style="flex:1;min-width:200px">
+          <span class="fiscal-alert-icon">ℹ</span>
+          <span><b>Quadro RW</b> — Anche senza vendere, devi dichiarare il valore delle cripto detenute al 31/12 se su exchange esteri (Coinbase, Binance…). Obbligo dal 2020 (Circ. 30/E 2023).</span>
+        </div>
+        <div class="fiscal-alert warn" style="flex:1;min-width:200px">
+          <span class="fiscal-alert-icon">⚠</span>
+          <span><b>IVAFE</b> — Dal 2023, 0,2% sul valore al 31/12 (Quadro RW col.15). Secondo la Circolare AdE 30/E/2023 è dovuta anche per BTC su <b>hardware wallet</b> (Ledger, Trezor…) perché le cripto sono considerate "detenute all'estero" indipendentemente da dove si trova fisicamente il dispositivo.</span>
+        </div>
+      </div>
+
+      <!-- Tabella anni -->
+      <div style="overflow-x:auto">
+        <table class="holding-t" id="holdingTable">
+          <thead>
+            <tr>
+              <th style="text-align:left">Anno</th>
+              <th>BTC al 31/12</th>
+              <th>Prezzo 31/12 (€)</th>
+              <th>Valore (€)</th>
+              <th>IVAFE 0,2%</th>
+              <th>Quadro RW</th>
+              <th style="text-align:left;padding-left:.5rem">Note</th>
+            </tr>
+          </thead>
+          <tbody id="holdingRows"></tbody>
+          <tfoot>
+            <tr id="holdingFoot" style="display:none">
+              <td>IVAFE totale dovuta</td>
+              <td colspan="3" style="font-family:var(--sans);font-size:.7rem;color:var(--text3)">Somma IVAFE degli anni in cui la norma è applicabile (≥ 2023)</td>
+              <td id="hd_tot_ivafe">—</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div style="padding:.65rem 1.25rem;font-family:var(--sans);font-size:.72rem;color:var(--text3);border-top:1px solid var(--line);line-height:1.65">
+        <b>Come usare:</b> inserisci il prezzo di BTC al 31 dicembre di ogni anno per calcolare il valore dichiarabile e l'eventuale IVAFE. I prezzi storici approssimativi sono precompilati — verificali su CoinGecko o Coinbase.
+        Questa tabella è solo un supporto al calcolo. ⚠ Consulta un esperto per la tua situazione specifica.
+      </div>
+    </div>
+  </div>
+
+  <!-- LAYOUT: colonna sinistra (form + panoramica + FIFO + vendite) | colonna destra (RT + dettagli) -->
+  <div class="sim-layout">
+
+    <!-- ══ SINISTRA ══ -->
+    <div class="sim-main">
+
+      <!-- 1. INPUT: BTC da vendere + prezzo -->
+      <div class="formbox">
+        <div class="form-title">Simula vendita BTC</div>
+        <div class="frow" style="align-items:flex-end">
+          <div class="fld">
+            <label>BTC da vendere</label>
+            <input type="number" id="sim_btc" placeholder="es. 0.05" min="0" step="0.00000001" oninput="calcSim()">
+            <div class="fhint" id="sim_avail_hint">—</div>
+          </div>
+          <div class="fld">
+            <label>Prezzo di vendita (€/BTC)</label>
+            <input type="number" id="sim_price" min="0" step="100" oninput="calcSim()">
+            <div class="fhint" id="sim_price_hint">—</div>
+          </div>
+          <button class="btn-add" onclick="simSellAll()"
+            style="background:var(--bg2);color:var(--text2);border:1px solid var(--line2);box-shadow:none;flex-shrink:0"
+            title="Imposta tutti i BTC disponibili">↑ Max disp.</button>
+        </div>
+        <div class="fhint" id="sim_hint" style="margin-top:.55rem">
+          inserisci quanti BTC vuoi vendere e a che prezzo — calcolo FIFO istantaneo
+        </div>
+      </div>
+
+      <!-- 2. PANORAMICA VENDITA (stile dashboard) -->
+      <div id="simOverview" style="display:none">
+
+        <!-- Hero numero grande -->
+        <div class="sim-hero-row">
+          <div class="sim-hero-block">
+            <div class="sim-hero-label">Ricavo lordo vendita</div>
+            <div class="sim-hero-num" id="sim_gain_num">—</div>
+            <div class="sim-hero-sub" id="sim_gain_sub">—</div>
+          </div>
+          <div class="sim-hero-block sim-hero-tax" id="simTaxBox">
+            <div class="sim-hero-label">Imposta sostitutiva 26%</div>
+            <div class="sim-hero-num amber" id="sim_tax_num">—</div>
+            <div class="sim-hero-sub" id="sim_tax_sub">da versare in dichiarazione</div>
+          </div>
+          <div class="sim-hero-block">
+            <div class="sim-hero-label">Ricavo netto in tasca</div>
+            <div class="sim-hero-num" id="sim_net_num">—</div>
+            <div class="sim-hero-sub" id="sim_net_sub">ricavo − imposta</div>
+          </div>
+        </div>
+
+        <!-- Strip calcolo: come il flusso dashboard -->
+        <div class="sim-flow-strip">
+          <div class="sim-flow-item">
+            <div class="sf-lbl">Ricavo lordo</div>
+            <div class="sf-val btc" id="sf_revenue">—</div>
+            <div class="sf-sub" id="sf_revenue_sub">—</div>
+          </div>
+          <div class="sf-op">−</div>
+          <div class="sim-flow-item">
+            <div class="sf-lbl">Costo d'acquisto FIFO</div>
+            <div class="sf-val dim" id="sf_cost">—</div>
+            <div class="sf-sub" id="sf_cost_sub">—</div>
+          </div>
+          <div class="sf-op">=</div>
+          <div class="sim-flow-item">
+            <div class="sf-lbl">Plusvalenza lorda</div>
+            <div class="sf-val" id="sf_gain">—</div>
+            <div class="sf-sub">imponibile</div>
+          </div>
+          <div class="sf-op">×26%</div>
+          <div class="sim-flow-item">
+            <div class="sf-lbl">Imposta</div>
+            <div class="sf-val amber" id="sf_tax">—</div>
+            <div class="sf-sub">sostitutiva</div>
+          </div>
+          <div class="sf-op">=</div>
+          <div class="sim-flow-item sf-result">
+            <div class="sf-lbl">In tasca netto</div>
+            <div class="sf-val" id="sf_net">—</div>
+            <div class="sf-sub">dopo tasse</div>
+          </div>
+        </div>
+
+        <!-- Nota -->
+        <div class="sim-note" id="sim_note">—</div>
+      </div>
+
+      <!-- 3. LOTTI FIFO -->
+      <div class="tbox-fifo" id="simLotsBox" style="display:none">
+        <div class="tbox-hdr">
+          <span class="tbox-hdr-title" id="simLotsTitle">Lotti acquisto coinvolti (FIFO)</span>
+          <span onclick="switchTab('stor')" class="link-to"
+            style="cursor:pointer;font-family:var(--mono);font-size:.7rem;color:var(--text3)">
+            vedi storico completo ↗
+          </span>
+        </div>
+        <div style="overflow-x:auto"><div id="simLotsWrap"></div></div>
+      </div>
+
+      <!-- 4. BOTTONE REGISTRA -->
+      <button class="btn-apply" id="simApplyBtn" onclick="applySale()" style="display:none">
+        ✓ Registra questa vendita — aggiorna storico e saldi
+      </button>
+
+      <!-- 5. VENDITE GIÀ REGISTRATE -->
+      <div id="salesHistBox" style="display:none">
+        <div class="sh" style="margin-top:1.5rem;margin-bottom:.75rem">
+          <div class="sh-title" style="font-size:.9rem">Vendite già registrate</div>
+          <div class="sh-badge" id="salesHistCount"></div>
+        </div>
+        <div class="tbox">
+          <div class="tbox-hdr" style="background:var(--amber-bg);border-bottom-color:var(--amber-brd)">
+            <span class="tbox-hdr-title" style="color:var(--amber)">Registro vendite</span>
+            <span style="font-family:var(--mono);font-size:.7rem;color:var(--text3)">FIFO applicato · lotti aggiornati</span>
+          </div>
+          <div id="salesHistWrap"></div>
+        </div>
+      </div>
+
+    </div><!-- /sim-main -->
+
+    <!-- ══ DESTRA: colonna dettagli 730 ══ -->
+    <div class="sim-side">
+
+      <!-- Portfolio reale attuale -->
+      <div class="side-card">
+        <div class="side-title">Portfolio attuale</div>
+        <div class="side-row"><span class="side-lbl">Capitale investito</span><span class="side-val" id="sp_inv">—</span></div>
+        <div class="side-row"><span class="side-lbl">BTC posseduti</span><span class="side-val btc" id="sp_btc">—</span></div>
+        <div class="side-row"><span class="side-lbl">Prezzo medio carico</span><span class="side-val" id="sp_avg">—</span></div>
+        <div class="side-row"><span class="side-lbl">Valore attuale</span><span class="side-val btc" id="sp_val">—</span></div>
+        <div class="side-row"><span class="side-lbl">Guadagno non realizz.</span><span class="side-val" id="sp_gain">—</span></div>
+        <div class="side-row side-row-accent">
+          <span class="side-lbl" style="font-weight:600;color:var(--text)">Netto se vendessi tutto</span>
+          <span class="side-val lg" id="sp_net">—</span>
+        </div>
+      </div>
+
+      <!-- Saldo dopo la simulazione -->
+      <div class="side-card">
+        <div class="side-title">Saldo dopo vendita</div>
+        <div class="side-row"><span class="side-lbl">BTC disponibili ora</span><span class="side-val btc" id="sim_cur_btc">—</span></div>
+        <div class="side-row"><span class="side-lbl">BTC venduti (simulazione)</span><span class="side-val" id="sim_sell_btc">—</span></div>
+        <div class="side-row"><span class="side-lbl">Ricavo lordo</span><span class="side-val btc" id="sim_side_revenue">—</span></div>
+        <div class="side-row"><span class="side-lbl">Imposta 26%</span><span class="side-val amber" id="sim_side_tax">—</span></div>
+        <div class="side-row"><span class="side-lbl">Ricavo netto in tasca</span><span class="side-val green" id="sim_side_net">—</span></div>
+        <div class="side-row side-row-accent">
+          <span class="side-lbl" style="font-weight:600;color:var(--text)">BTC rimasti dopo</span>
+          <span class="side-val lg" id="sim_rem_btc">—</span>
+        </div>
+      </div>
+
+      <!-- Quadro RT -->
+      <div class="side-card">
+        <div class="side-title">Quadro RT — Modello Redditi PF</div>
+        <div style="font-family:var(--sans);font-size:.73rem;color:var(--text3);margin-bottom:.72rem;line-height:1.6">
+          Sezione II – Plusvalenze da cripto-attività<br>
+          art. 67 c.1 lett. c-sexies TUIR
+        </div>
+        <div class="rt-row">
+          <span class="rt-lbl"><b class="rt-code">RT21</b>Corrispettivi percepiti</span>
+          <span class="rt-val" id="rt21">—</span>
+        </div>
+        <div class="rt-row">
+          <span class="rt-lbl"><b class="rt-code">RT22</b>Costo o valore d'acquisto</span>
+          <span class="rt-val dim" id="rt22">—</span>
+        </div>
+        <div class="rt-row">
+          <span class="rt-lbl"><b class="rt-code">RT23</b>Plusvalenza (RT21 − RT22)</span>
+          <span class="rt-val" id="rt23">—</span>
+        </div>
+        <div class="rt-row" style="padding-top:.7rem;border-top:2px solid var(--line2)!important">
+          <span class="rt-lbl" style="font-weight:700;color:var(--text)"><b class="rt-code">RT30</b>Imposta dovuta (26%)</span>
+          <span class="rt-val amber" id="rt30">—</span>
+        </div>
+        <div class="rt-row" id="rt94row" style="display:none">
+          <span class="rt-lbl" style="color:var(--red)"><b class="rt-code">RT94</b>Minusvalenza da riportare</span>
+          <span class="rt-val red" id="rt94">—</span>
+        </div>
+        <div style="font-size:.7rem;color:var(--text4);margin-top:.85rem;line-height:1.65;font-style:italic">
+          ⚠ Dati indicativi a fini simulativi. Consulta un commercialista prima della dichiarazione definitiva.
+        </div>
+      </div>
+
+      <!-- IVAFE + Riepilogo annuale -->
+      <div class="side-card" id="fyCard" style="display:none">
+        <div class="side-title" style="color:var(--btc)">Riepilogo fiscale per anno</div>
+        <div style="font-family:var(--sans);font-size:.73rem;color:var(--text3);margin-bottom:.7rem;line-height:1.55">
+          Plusvalenze realizzate e stima IVAFE per anno solare. Usa questi dati per compilare il Modello Redditi PF.
+        </div>
+        <div id="fyTableWrap" style="overflow-x:auto"></div>
+        <div style="margin-top:.75rem" id="fyAlerts"></div>
+      </div>
+
+      <!-- IVAFE corrente -->
+      <div class="side-card" id="ivafeCurCard" style="display:none">
+        <div class="side-title" style="color:var(--amber)">IVAFE — Imposta sul valore</div>
+        <div style="font-family:var(--sans);font-size:.73rem;color:var(--text3);margin-bottom:.6rem;line-height:1.55">
+          0,2% annuo sul valore delle cripto al 31/12 (Quadro RW, da 2023)
+        </div>
+        <div class="side-row"><span class="side-lbl">Valore portfolio ora</span><span class="side-val btc" id="ivafe_val">—</span></div>
+        <div class="side-row side-row-accent">
+          <span class="side-lbl" style="font-weight:600">IVAFE stimata anno corrente</span>
+          <span class="side-val lg amber" id="ivafe_est">—</span>
+        </div>
+        <div style="font-size:.7rem;color:var(--text4);margin-top:.6rem;line-height:1.6;font-style:italic">
+          Basata sul valore attuale (prezzo live). Ricalcola al 31/12 con il prezzo di fine anno.
+        </div>
+      </div>
+
+      <!-- Note dichiarazione -->
+      <div class="side-card">
+        <div class="side-title">Guida alla dichiarazione</div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;font-family:var(--sans);font-size:.78rem">
+          <div class="fiscal-alert info"><span class="fiscal-alert-icon">✓</span><span><b>Quadro RT</b> — Plusvalenze da cessione cripto. Compila ogni anno in cui hai venduto con guadagno. Art. 67 c.1 lett. c-sexies TUIR.</span></div>
+          <div class="fiscal-alert warn"><span class="fiscal-alert-icon">⚠</span><span><b>IVAFE (da 2023)</b> — 0,2% sul valore al 31/12. Obbligatoria se detieni su exchange esteri. Quadro RW.</span></div>
+          <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Quadro RW</b> — Se usi Coinbase, Binance o altri exchange esteri, devi dichiarare il valore detenuto anche senza vendite.</span></div>
+          <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Soglia 2023</b> — Dal 2023 tutte le plusvalenze sono tassabili (eliminata la soglia storica di €51.645,69).</span></div>
+          <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Minusvalenze</b> — Riportabili nei 4 anni successivi. Indica l'importo in RT94.</span></div>
+        </div>
+        <div style="font-size:.7rem;color:var(--text4);margin-top:.85rem;font-style:italic;line-height:1.5">⚠ Questa app è uno strumento di supporto al calcolo. I dati sono indicativi. Verifica sempre con un commercialista o tramite il sito dell'Agenzia delle Entrate.</div>
+      </div>
+
+      <!-- Metodo FIFO spiegato -->
+      <div class="side-card">
+        <div class="side-title">Metodo FIFO — come funziona</div>
+        <div style="font-family:var(--sans);font-size:.8rem;color:var(--text2);line-height:1.75">
+          <p><b style="color:var(--text)">First In, First Out</b> — i BTC acquistati per primi vengono considerati venduti per primi. Obbligatorio per le cripto in Italia.</p>
+          <div style="background:var(--bg2);border-left:3px solid var(--btc-brd);padding:.55rem .85rem;margin:.65rem 0;font-family:var(--mono);font-size:.75rem;color:var(--text3);line-height:1.7">
+            gain lotto = (prezzo vendita − prezzo acquisto) × BTC usati
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.5rem">
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span style="color:var(--green);font-weight:700;font-family:var(--mono);font-size:.85rem">+</span>
+              <span><b style="color:var(--green)">Plusvalenza</b> → tassata 26% (imposta sostitutiva)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span style="color:var(--red);font-weight:700;font-family:var(--mono);font-size:.85rem">−</span>
+              <span><b style="color:var(--red)">Minusvalenza</b> → non tassata, riportabile 4 anni (RT94)</span>
+            </div>
+          </div>
+          <p style="margin-top:.65rem;color:var(--text3);font-size:.75rem">
+            I lotti parzialmente venduti riprendono dal punto esatto in cui si erano fermati.
+            <span onclick="switchTab('stor')" class="link-to" style="cursor:pointer">
+              Vedi lotti nello storico ↗
+            </span>
+          </p>
+        </div>
+      </div>
+
+    </div><!-- /sim-side -->
+
+  </div><!-- /sim-layout -->
+</div><!-- /panel-730 -->
+
+</div><!-- /page -->
+
+<!-- ══ MODAL POSSESSO ANNO ══ -->
+<div class="overlay" id="holdingYearOverlay">
+  <div class="modal" style="max-width:32rem">
+    <div class="modal-icon">📋</div>
+    <h3 id="hy_title">Dichiarazione anno</h3>
+    <div id="hy_body"></div>
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeHoldingYear()">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL VENDITA DETTAGLIO ══ -->
+<div class="overlay" id="saleDetailOverlay">
+  <div class="modal" style="max-width:30rem">
+    <div class="modal-icon">📊</div>
+    <h3 id="sd_title">Dettaglio vendita</h3>
+    <div id="sd_body" style="font-family:var(--sans);font-size:.82rem;margin-bottom:1rem"></div>
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeSaleDetail()">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CONFERMA ══ -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal" style="max-width:22rem">
+    <div class="modal-icon" id="ci">⚠️</div>
+    <h3 id="ct">Conferma</h3>
+    <p id="cm"></p>
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeConfirm()">Annulla</button>
+      <button class="mbtn danger" id="cok" onclick="doConfirm()">Conferma</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL IMPORTA ══ -->
+<div class="overlay" id="importOverlay">
+  <div class="modal">
+    <div class="modal-icon">⬆️</div>
+    <h3>Importa sessione</h3>
+    <p>Seleziona un file JSON esportato. Compatibile con tutti i salvataggi dal v4 in poi.</p>
+    <div class="drop-zone" id="dropZone"
+         onclick="el('fileInput').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div class="drop-icon">📂</div>
+      <div class="drop-main">Clicca per scegliere il file</div>
+      <div class="drop-sub">oppure trascina il .json qui</div>
+      <div class="drop-name" id="dropName"></div>
+    </div>
+    <input type="file" id="fileInput" accept=".json,application/json" style="display:none" onchange="handleFileSelect(this)">
+    <details style="margin-bottom:.82rem">
+      <summary style="font-family:var(--sans);font-size:.72rem;color:var(--text3);cursor:pointer;padding:.3rem 0">oppure incolla il JSON manualmente</summary>
+      <textarea id="importTA" placeholder='{"prices":{"btc":84000},"rows":[],"corrections":[],"sales":[]}'
+        style="margin-top:.55rem"></textarea>
+    </details>
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeImport()">Annulla</button>
+      <button class="mbtn ok" onclick="doImport()">Importa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ═══ STATO ═══
+let rows        = [];   // [{id,date,eur,btc,rate}] ← struttura identica v4
+let corrections = [];   // [{id,date,delta,reason}]
+let sales       = [];   // [{id,date,btcSold,price,revenue,gain,tax,lots:[{rowId,btcUsed}]}]
+const LS = 'btctracker_v5';
+let _confirmCb = null, _importRaw = '', _lastSim = null;
+
+// ═══ UTILS ═══
+const fEur = (v,d=2) => new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',minimumFractionDigits:d,maximumFractionDigits:d}).format(v);
+const fBtc = v => { const s=parseFloat(v.toFixed(8)).toString(); if(!s.includes('.'))return s+'.00'; const p=s.split('.'); if(p[1].length<2)p[1]=p[1].padEnd(2,'0'); return p.join('.'); };
+const fPct = v => (v>=0?'+':'')+(v*100).toFixed(2)+'%';
+const uid  = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const btcNow = () => Math.max(0,parseFloat(el('btcPrice').value)||0);
+const el   = id => document.getElementById(id);
+const set  = (id,v) => { const e=el(id); if(e) e.textContent=v; };
+
+// ═══ FIFO CORE ═══
+function getLotAvailability() {
+  // Versione COMPLETA: include correzioni negative in FIFO + vendite
+  // Usata per determinare quanti BTC si possono vendere (calcolo interno)
+  const a = {};
+  rows.forEach(r => a[r.id] = r.btc);
+
+  // Applica le vendite registrate
+  sales.forEach(s => s.lots.forEach(l => {
+    if(a[l.rowId] !== undefined) a[l.rowId] = Math.max(0, a[l.rowId] - l.btcUsed);
+  }));
+
+  // Applica le correzioni NEGATIVE in ordine FIFO
+  const negCorr = corrections
+    .filter(c => c.delta < 0)
+    .sort((a,b) => a.date.localeCompare(b.date));
+  const lotOrder = [...rows].sort((x,y) => x.date.localeCompare(y.date));
+  for(const corr of negCorr) {
+    let rem = Math.abs(corr.delta);
+    for(const lot of lotOrder) {
+      if(rem <= 1e-12) break;
+      const avail = a[lot.id] || 0;
+      if(avail <= 1e-12) continue;
+      const use = Math.min(avail, rem);
+      a[lot.id] = avail - use;
+      rem -= use;
+    }
+  }
+  return a;
+}
+
+function getLotSalesOnlyAvailability() {
+  // Versione DISPLAY: solo vendite esplicite, no correzioni
+  // Usata per mostrare le barre storico e la colonna "già venduti" nel FIFO
+  const a = {};
+  rows.forEach(r => a[r.id] = r.btc);
+  sales.forEach(s => s.lots.forEach(l => {
+    if(a[l.rowId] !== undefined) a[l.rowId] = Math.max(0, a[l.rowId] - l.btcUsed);
+  }));
+  return a;
+}
+
+// ═══ PREZZO LIVE ═══
+async function fetchPrice() {
+  const badge=el('liveBadge'), lbl=el('liveLabel');
+  badge.className='live-badge loading'; lbl.textContent='caricamento...';
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur',
+                          {signal:AbortSignal.timeout(8000)});
+    if(!r.ok) throw 0;
+    const d = await r.json();
+    const p = d?.bitcoin?.eur;
+    if(!p) throw 0;
+    el('btcPrice').value = p;
+    render();
+    badge.className='live-badge'; lbl.textContent='live';
+    const now=new Date();
+    set('priceTime', now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0'));
+    toast('Prezzo: '+fEur(p,0),'ok');
+  } catch {
+    badge.className='live-badge error'; lbl.textContent='non disp.'; set('priceTime','');
+    toast('Prezzo non disponibile — modificalo manualmente','warn');
+  }
+}
+
+// ═══ TABS ═══
+function switchTab(name) {
+  ['dash','stor','730'].forEach(t => {
+    el('panel-'+t).classList.toggle('active', t===name);
+    el('tab-'+t).classList.toggle('active',   t===name);
+  });
+  if(name==='730') {
+    if(!el('sim_price').value && btcNow()>0) el('sim_price').value = btcNow();
+    updateSimStatic();
+    renderSalesHist();
+    renderHoldingDecl();
+  }
+}
+
+function goToStorico(which) {
+  if(!rows.length) return;
+  switchTab('stor');
+  const r = which==='first' ? rows[0] : rows[rows.length-1];
+  const yr = r.date.slice(0,4);
+  setTimeout(()=>{
+    const det = document.querySelector('details.yr-group[data-year="'+yr+'"]');
+    if(det){ det.open=true; det.scrollIntoView({behavior:'smooth',block:'center'}); }
+  }, 80);
+}
+
+// ═══ FORM ACQUISTO ═══
+['f_eur','f_btc'].forEach(id => el(id).addEventListener('input', autoCalc));
+function autoCalc() {
+  const ve=parseFloat(el('f_eur').value), vb=parseFloat(el('f_btc').value);
+  const prev=el('ratePreview');
+  if(!isNaN(ve)&&ve>0 && !isNaN(vb)&&vb>0) {
+    const rate=ve/vb;
+    el('ratePreviewVal').textContent=new Intl.NumberFormat('it-IT',{maximumFractionDigits:0}).format(rate);
+    prev.style.display='flex';
+    set('fhint','✓ tasso: '+new Intl.NumberFormat('it-IT',{maximumFractionDigits:0}).format(rate)+' €/BTC');
+  } else {
+    prev.style.display='none';
+    set('fhint','inserisci importo e BTC → il tasso €/BTC si calcola automaticamente');
+  }
+}
+
+function addRow() {
+  const date=el('f_date').value, ve=parseFloat(el('f_eur').value), vb=parseFloat(el('f_btc').value);
+  if(!date)      { toast('Inserisci la data','err'); return; }
+  if(!ve||ve<=0) { toast("Inserisci l'importo",'err'); return; }
+  if(!vb||vb<=0) { toast('Inserisci i BTC','err'); return; }
+  rows.push({id:uid(),date,eur:ve,btc:vb,rate:ve/vb});
+  rows.sort((a,b)=>a.date.localeCompare(b.date));
+  ['f_eur','f_btc'].forEach(id=>el(id).value='');
+  el('ratePreview').style.display='none';
+  set('fhint','inserisci importo e BTC → il tasso €/BTC si calcola automaticamente');
+  render(); saveAll(); toast('Acquisto aggiunto ✓','ok');
+}
+
+// ═══ CORREZIONI ═══
+function addCorrection() {
+  const date=el('c_date').value, delta=parseFloat(el('c_delta').value);
+  const reason=el('c_reason').value.trim()||'Correzione manuale';
+  if(!date)               { toast('Inserisci la data','err'); return; }
+  if(isNaN(delta)||!delta){ toast('Inserisci un Δ BTC valido','err'); return; }
+  corrections.push({id:uid(),date,delta,reason});
+  corrections.sort((a,b)=>a.date.localeCompare(b.date));
+  el('c_delta').value=''; el('c_reason').value='';
+  render(); saveAll(); toast('Correzione registrata ✓','ok');
+}
+function delCorrection(id) {
+  const c=corrections.find(x=>x.id===id); if(!c) return;
+  confirm2('🗑️','Elimina correzione','Eliminare questa correzione?',
+    ()=>{ corrections=corrections.filter(x=>x.id!==id); render(); saveAll(); toast('Eliminata','warn'); },'Elimina');
+}
+
+// ═══ ELIMINA ROW ═══
+function delRow(id) {
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  if(sales.some(s=>s.lots.some(l=>l.rowId===id))) {
+    toast('Lotto coinvolto in vendite — elimina prima le vendite correlate','err'); return;
+  }
+  const d=r.date.split('-').reverse().join('/');
+  confirm2('🗑️','Elimina acquisto',
+    'Eliminare l\'acquisto del '+d+' ('+fEur(r.eur)+' · '+fBtc(r.btc)+' BTC)?',
+    ()=>{ rows=rows.filter(x=>x.id!==id); render(); saveAll(); toast('Acquisto eliminato','warn'); },'Elimina');
+}
+function confirmDelAll(tipo) {
+  if(tipo==='acquisti') {
+    if(!rows.length){ toast('Nessun acquisto','warn'); return; }
+    confirm2('⚠️','Elimina tutti','Eliminare tutti i '+rows.length+' acquisti? Le vendite verranno anch\'esse eliminate.',
+      ()=>{ rows=[]; sales=[]; render(); saveAll(); toast('Eliminati','warn'); },'Elimina tutto');
+  } else {
+    if(!corrections.length){ toast('Nessuna correzione','warn'); return; }
+    confirm2('⚠️','Elimina tutte','Eliminare tutte le '+corrections.length+' correzioni?',
+      ()=>{ corrections=[]; render(); saveAll(); toast('Eliminate','warn'); },'Elimina tutto');
+  }
+}
+
+// ═══ CONFIRM ═══
+function confirm2(icon,title,msg,cb,okLbl) {
+  _confirmCb=cb; el('ci').textContent=icon; el('ct').textContent=title;
+  el('cm').textContent=msg; el('cok').textContent=okLbl;
+  el('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){ el('confirmOverlay').classList.remove('open'); _confirmCb=null; }
+function doConfirm(){ if(_confirmCb)_confirmCb(); closeConfirm(); }
+el('confirmOverlay').addEventListener('click',e=>{ if(e.target===el('confirmOverlay'))closeConfirm(); });
+
+// ═══ RENDER PRINCIPALE ═══
+function render(){ renderDashboard(); renderStorico(); renderHoldingDecl(); }
+
+function renderDashboard() {
+  const btc      = btcNow();
+  const totEurAll= rows.reduce((s,r)=>s+r.eur,0);        // tutto il capitale mai investito
+  const totBtc   = rows.reduce((s,r)=>s+r.btc,0);
+  const totC     = corrections.reduce((s,c)=>s+c.delta,0);
+  const totS     = sales.reduce((s,sl)=>s+sl.btcSold,0);
+  const btcEff   = Math.max(0,totBtc+totC-totS);
+
+  // Capitale residuo: capitale originale meno il costo FIFO dei BTC già venduti
+  // sale.gain = revenue - cost  →  cost = revenue - gain
+  const totCostSold = sales.reduce((s,sl)=>s+(sl.revenue-sl.gain),0);
+  // Se non hai più BTC, il capitale residuo è 0
+  // (le correzioni negative portano via BTC senza recuperare il costo base)
+  const totEurRaw = Math.max(0, totEurAll - totCostSold);
+  const totEur    = btcEff < 1e-9 ? 0 : totEurRaw;
+  const totEurInv= totEurAll;                             // storico investito totale
+
+  const avg    = btcEff>0?totEur/btcEff:0;
+  const val    = btcEff*btc;
+  const gross  = val-totEur;
+  const tax    = gross>0?gross*0.26:0;
+  const net    = gross-tax;
+  const port   = totEur+net;
+  const pct    = totEur>0?gross/totEur:0;
+
+  // Vendite aggregate
+  const totSRev = sales.reduce((s,sl)=>s+sl.revenue,0);
+  const totSTax = sales.reduce((s,sl)=>s+sl.tax,0);
+  const totSGain= sales.reduce((s,sl)=>s+sl.gain,0);
+
+  let months=0,fD='—',lD='—';
+  if(rows.length>0) {
+    const first=new Date(rows[0].date);
+    months=Math.max(1,Math.round((Date.now()-first)/(1000*60*60*24*30.44)));
+    fD=rows[0].date.split('-').reverse().join('/');
+    lD=rows[rows.length-1].date.split('-').reverse().join('/');
+  }
+  const has=rows.length>0;
+
+  // Badge + sh
+  set('d_badge', has ? rows.length+' acquisti · primo '+fD : '');
+  el('d_badge').style.display = has?'':'none';
+
+  // Hero
+  const hv=el('h_val'); hv.textContent=fEur(val);
+  hv.className='hero-num'+(has?(gross>=0?' pos':' neg'):'');
+  el('h_chips').innerHTML=!has?'':
+    (totEur>0?'<span class="chip neutral">allocato '+fEur(totEur)+'</span>':'')+
+    (totCostSold>0?'<span class="chip neutral" style="opacity:.6">incassato '+fEur(totSRev)+'</span>':'')+
+    (btcEff>0?'<span class="chip '+(gross>=0?'pos':'neg')+'">'+(gross>=0?'+':'')+fEur(gross)+'&nbsp;&nbsp;'+fPct(pct)+'</span>':'');
+  set('h_inv',   has?fEur(totEur):'—'); // capitale residuo
+  set('h_inv_sub', has&&totCostSold>0?'storico totale '+fEur(totEurAll):'');
+  set('h_btc',   has?fBtc(btcEff):'—');
+  set('h_avg',   avg>0?fEur(avg,0):'—');
+  const mult = totEur>0 ? val/totEur : 0;
+  el('h_mult').textContent = has&&mult>0 ? mult.toFixed(2)+'×' : '—';
+  el('h_mult').className   = 'hstat-val '+(has?(mult>=1?'pos':'neg'):'muted');
+  set('h_nbuys', has?rows.length+(rows.length===1?' acquisto':' acquisti'):'—');
+
+  // Calc flow
+  const cf=el('calcFlow'); cf.style.opacity=has?'1':'.35';
+  set('cf_inv',  fEur(totEur));
+  set('cf_inv_sub', has&&totCostSold>0?'residuo (tot. '+fEur(totEurAll)+')':'in BTC');
+  set('cf_val',  has?fEur(val):'—'); el('cf_val').className='cf-val btc';
+  set('cf_val_sub', has?fBtc(btcEff)+' BTC × '+fEur(btc,0):'—');
+  el('cf_gross').textContent=has?(gross>=0?'+':'')+fEur(gross):'—';
+  el('cf_gross').className='cf-val '+(has?(gross>=0?'green':'red'):'dim');
+  set('cf_gross_sub', has?fPct(pct)+' sul capitale residuo':'—');
+  if(!has){ set('cf_tax','—'); el('cf_tax').className='cf-val dim'; set('cf_tax_sub','se positivo'); }
+  else if(tax>0){ set('cf_tax',fEur(tax)); el('cf_tax').className='cf-val amber'; set('cf_tax_sub','26% × plusvalenza'); }
+  else { set('cf_tax','€ 0,00'); el('cf_tax').className='cf-val dim'; set('cf_tax_sub',gross<0?'in perdita':'nessuna plus.'); }
+  el('cf_net').textContent=has?fEur(port):'—';
+  el('cf_net').className='cf-val '+(has?(port>=totEur?'green':'red'):'dim');
+  set('cf_net_sub', has?(net>=0?'+':'')+fEur(net)+' guadagno netto':'dopo tasse');
+  el('cfstep_net').className='cf-step cf-result'+(has&&port<totEur?' neg':'');
+
+  // Side riepilogo
+  set('s_inv',has?fEur(totEur>0?totEur:0):'—');  // capitale residuo
+  const sinvAllRow=el('s_inv_all_row');
+  if(sinvAllRow){
+    if(has&&sales.length>0){ sinvAllRow.style.display=''; set('s_inv_all',fEur(totEurAll)); }
+    else sinvAllRow.style.display='none';
+  }
+  el('s_val').textContent=has?fEur(val):'—'; el('s_val').className='side-val btc';
+  el('s_gross').textContent=!has?'—':(gross>=0?'+':'')+fEur(gross);
+  el('s_gross').className='side-val '+(has?(gross>=0?'green':'red'):'dim');
+  el('s_tax').textContent=has?(tax>0?fEur(tax):'€ 0,00'):'—';
+  el('s_tax').className='side-val '+(has&&tax>0?'amber':'dim');
+  el('s_net').textContent=!has?'—':(net>=0?'+':'')+fEur(net);
+  el('s_net').className='side-val '+(has?(net>=0?'green':'red'):'dim');
+  el('s_port').textContent=has?fEur(port):'—';
+  el('s_port').className='side-val lg '+(has?(port>=totEur?'green':'red'):'dim');
+
+  // Side statistiche
+  set('s_nbuys',   has?rows.length+(rows.length===1?' acquisto':' acquisti'):'—');
+  set('s_months',  has?months+' mesi':'—');
+  set('s_avgm',    has&&months>0?fEur(totEurAll/months,0)+'/mese':'—');
+  set('s_avgrate', avg>0?fEur(avg,0):'—');
+  set('s_curprice',fEur(btc,0));
+  set('s_portval', has?fEur(val):'—');
+  // Pricebar: distanza prezzo attuale dal carico medio
+  const pvAvg=el('priceVsAvg');
+  if(pvAvg){
+    if(has && avg>0){
+      pvAvg.style.display='';
+      const delta=(btc-avg)/avg;
+      const pvv=el('priceVsAvgVal');
+      pvv.textContent=(delta>=0?'+':'')+fPct(delta);
+      pvv.style.color=delta>=0?'var(--green)':'var(--red)';
+    } else { pvAvg.style.display='none'; }
+  }
+  set('s_first',   fD); set('s_last',lD);
+  // ROI e multiplo
+  // ROI totale = (valore BTC attuali + netto vendite - totale investito) / totale investito
+  const roiNet = totSTax ? totSRev - totSTax : 0; // netto incassato dalle vendite
+  const roi = totEurAll>0 ? (val + roiNet - totEurAll) / totEurAll : 0;
+  el('s_roi').textContent = has ? (roi>=0?'+':'')+fPct(roi) : '—';
+  el('s_roi').className   = 'side-val '+(has?(roi>=0?'green':'red'):'dim');
+  const multS = totEur>0 ? val/totEur : 0;
+  el('s_mult').textContent = has&&multS>0 ? multS.toFixed(3)+'×' : '—';
+  el('s_mult').className   = 'side-val '+(has?(multS>=1?'green':'red'):'dim');
+
+  // Box vendite
+  const sb=el('salesBox');
+  if(sales.length>0) {
+    sb.style.display='';
+    set('sv_count', sales.length+(sales.length===1?' vendita':' vendite'));
+    set('sv_btc',   fBtc(totS));
+    el('sv_revenue').textContent=fEur(totSRev); el('sv_revenue').className='side-val btc';
+    el('sv_gain').textContent=(totSGain>=0?'+':'')+fEur(totSGain);
+    el('sv_gain').className='side-val '+(totSGain>=0?'green':'red');
+    el('sv_tax').textContent=fEur(totSTax); el('sv_tax').className='side-val '+(totSTax>0?'amber':'dim');
+    const svNet=totSRev-totSTax;
+    el('sv_net').textContent=fEur(svNet); el('sv_net').className='side-val lg '+(svNet>0?'green':'red');
+    // Righe cliccabili per ogni vendita
+    const svR=el('sv_rows');
+    if(svR) svR.innerHTML=sales.map(s=>{
+      const d=s.date.split('-').reverse().join('/');
+      const g=s.gain>=0?'+':'';
+      return '<div class="sv-sale-row" onclick="openSaleDetail(this.dataset.id)" data-id="'+s.id+'">'
+        +'<span class="sv-sale-date">'+d+'</span>'
+        +'<span class="sv-sale-btc">'+fBtc(s.btcSold)+' BTC</span>'
+        +'<span class="sv-sale-gain" style="color:'+(s.gain>=0?'var(--green)':'var(--red)')+'">'+g+fEur(s.gain)+'</span>'
+        +'<span class="sv-sale-arr">↗</span>'
+        +'</div>';
+    }).join('');
+  } else { sb.style.display='none'; }
+
+  // Correzioni integrate nel saldo — nessun riepilogo separato in dashboard
+}
+
+// ═══ STORICO ═══
+function renderStorico() {
+  const btc=btcNow(), avail=getLotSalesOnlyAvailability(); // display: solo vendite, no correzioni
+  const wrap=el('accWrap'), foot=el('tbox-foot'), emptyEl=el('emptyAcq');
+
+  set('s_count_badge', rows.length>0?rows.length+' operazioni':'');
+  set('tbox-title',    rows.length>0?rows.length+(rows.length===1?' acquisto':' acquisti'):'Nessun acquisto');
+
+  if(!rows.length){ wrap.innerHTML=''; foot.style.display='none'; emptyEl.style.display='block'; return; }
+  emptyEl.style.display='none'; foot.style.display='flex';
+
+  const byYear={};
+  rows.forEach((r,i)=>{ const y=r.date.slice(0,4); if(!byYear[y])byYear[y]=[]; byYear[y].push({...r,_i:i}); });
+  const years=Object.keys(byYear).sort((a,b)=>+a-+b);
+
+  wrap.innerHTML=years.map((yr,yi)=>{
+    const grp=byYear[yr];
+    const yE=grp.reduce((s,r)=>s+r.eur,0);
+    const yB=grp.reduce((s,r)=>s+r.btc,0);
+    const yD=yB*btc-yE;
+    const isOpen=yi===years.length-1;
+
+    const rowsHtml=grp.map(r=>{
+      const diff=btc-r.rate, pct=r.rate>0?(diff/r.rate)*100:0;
+      const dcls=diff>=0?'t-pos':'t-neg', ds=diff>=0?'+':'';
+      const d=r.date.split('-').reverse().join('/');
+      const btcA=avail[r.id]??r.btc;
+      const btcSold=r.btc-btcA;
+      const soldPct=r.btc>0?btcSold/r.btc:0;
+
+      let soldBadge='';
+      if(btcSold>1e-9) {
+        const pct2=Math.min(100,soldPct*100).toFixed(0);
+        const full=btcA<1e-9;
+        const col=full?'var(--red)':'var(--amber)';
+        const label=full
+          ? 'venduto tutto ('+fBtc(btcSold)+')'
+          : 'venduto '+fBtc(btcSold)+' ('+pct2+'%)';
+        soldBadge='<div class="lot-sold-bar">'
+          +'<div class="lot-bar-track"><div class="lot-bar-fill" style="width:'+pct2+'%;background:'+col+'"></div></div>'
+          +'<span class="lot-sold-label" style="color:'+col+'">'+label+'</span>'
+          +'</div>';
+      }
+
+      return '<tr>'
+        +'<td class="t-n" style="text-align:left;padding-left:2.4rem">'+r._i+'</td>'
+        +'<td class="t-date" style="vertical-align:top">'+d+soldBadge+'</td>'
+        +'<td class="t-eur">'+fEur(r.eur)+'</td>'
+        +'<td class="t-btc">'+fBtc(btcA)
+          +(btcSold>1e-9?'<span style="color:var(--text4);font-size:.68rem"> / '+fBtc(r.btc)+'</span>':'')
+        +'</td>'
+        +'<td class="t-rate">'+fEur(r.rate,0)+'</td>'
+        +'<td class="'+dcls+'">'+ds+fEur(diff,0)+' ('+ds+pct.toFixed(1)+'%)</td>'
+        +'<td><button class="delbtn" onclick="delRow(this.dataset.id)" data-id="'+r.id+'">✕</button></td>'
+        +'</tr>';
+    }).join('');
+
+    const yrCls = yD>=0 ? ' yr-pos' : ' yr-neg';
+    return '<details class="yr-group'+yrCls+'" data-year="'+yr+'" '+(isOpen?'open':'')+'>'
+      +'<summary>'
+        +'<span class="yr-arrow">▶</span>'
+        +'<span class="yr-label">'+yr+'</span>'
+        +'<span class="yr-meta">'
+          +'<span>'+grp.length+(grp.length===1?' acquisto':' acquisti')+'</span>'
+          +'<span>'+fEur(yE)+'</span>'
+          +'<span class="'+(yD>=0?'pos':'neg')+'">'+(yD>=0?'+':'')+fEur(yD,0)+'</span>'
+        +'</span>'
+      +'</summary>'
+      +'<div class="yr-table">'
+        +'<table class="inner-t">'
+          +'<thead><tr>'
+            +'<th style="text-align:left;padding-left:2.4rem">#</th>'
+            +'<th style="text-align:left">Data</th>'
+            +'<th>Investito (€)</th>'
+            +'<th>BTC disp. / tot</th>'
+            +'<th>€/BTC acquisto</th>'
+            +'<th>Δ prezzo</th>'
+            +'<th></th>'
+          +'</tr></thead>'
+          +'<tbody>'+rowsHtml+'</tbody>'
+        +'</table>'
+      +'</div>'
+    +'</details>';
+  }).join('');
+
+  // Footer — capitale residuo (come dashboard)
+  const tEAll=rows.reduce((s,r)=>s+r.eur,0);             // totale storico
+  const tCostSold=sales.reduce((s,sl)=>s+(sl.revenue-sl.gain),0); // costo FIFO venduti
+  const tB=rows.reduce((s,r)=>s+r.btc,0);
+  const tC=corrections.reduce((s,c)=>s+c.delta,0);
+  const tS=sales.reduce((s,sl)=>s+sl.btcSold,0);
+  const tBeff=Math.max(0,tB+tC-tS);
+  const tEraw=Math.max(0,tEAll-tCostSold);
+  const tE=tBeff<1e-9?0:tEraw;                            // se 0 BTC → 0 capitale
+  const avg=tBeff>0?tE/tBeff:0, diff=tBeff*btc-tE;
+  set('ft_eur',fEur(tE)); set('ft_btc',fBtc(tBeff));
+  set('ft_rate',avg>0?fEur(avg,0):'—');
+  const ftd=el('ft_diff');
+  ftd.textContent=(diff>=0?'+':'')+fEur(diff);
+  ftd.className='f-val '+(diff>=0?'pos':'neg');
+  const ftv=el('ft_val');
+  if(ftv){ ftv.textContent=fEur(tBeff*btc); ftv.style.color='var(--btc)'; }
+  // Break-even price nel footer
+  const ftbe=el('ft_be');
+  if(ftbe){ ftbe.textContent=avg>0?fEur(avg,0):'—'; }
+
+  // ── Pannello destra: riepilogo saldo ──
+  const soldTot=sales.reduce((s,sl)=>s+sl.btcSold,0);
+  const grossS=tBeff*btc-tE;
+  set('stor_inv', tEAll>0?fEur(tEAll):'—');
+  const storInvRes=document.getElementById('stor_inv_res');
+  if(storInvRes){
+    const storInvResRow=storInvRes.closest('.side-row');
+    if(sales.length>0&&tE>=0){ storInvRes.textContent=fEur(tE); if(storInvResRow)storInvResRow.style.display=''; }
+    else { if(storInvResRow)storInvResRow.style.display='none'; }
+  }
+  if(soldTot>0){
+    el('stor_sold').textContent='−'+fBtc(soldTot);
+    el('stor_sold').className='side-val red';
+  } else { set('stor_sold','—'); el('stor_sold').className='side-val dim'; }
+  el('stor_btc_eff').textContent=fBtc(tBeff);
+  el('stor_btc_eff').className='side-val lg btc';
+  set('stor_avg',avg>0?fEur(avg,0):'—');
+  el('stor_val').textContent=fEur(tBeff*btc);
+  el('stor_val').className='side-val btc';
+  el('stor_gain').textContent=(grossS>=0?'+':'')+fEur(grossS);
+  el('stor_gain').className='side-val '+(grossS>=0?'green':'red');
+
+  renderStoricoCorrections();
+}
+
+function renderCorrections() {
+  // Usato solo ancora per compatibilità — renderStorico gestisce corrWrap2
+  renderStoricoCorrections();
+}
+
+function renderStoricoCorrections() {
+  const wrap=el('corrWrap2'), empty=el('emptyCorr'), cnt=el('corrCount');
+  if(!wrap) return;
+  if(!corrections.length){
+    wrap.innerHTML='';
+    if(empty) empty.style.display='block';
+    if(cnt) cnt.style.display='none';
+    return;
+  }
+  if(empty) empty.style.display='none';
+  if(cnt){ cnt.textContent=corrections.length; cnt.style.display=''; }
+  const tot=corrections.reduce((s,c)=>s+c.delta,0);
+  const rh=corrections.map(c=>{
+    const d=c.date.split('-').reverse().join('/');
+    const cls=c.delta>=0?'cd-pos':'cd-neg';
+    const sign=c.delta<0?'':'+'
+    return '<tr>'
+      +'<td class="c2-date">'+d+'</td>'
+      +'<td class="c2-reason" title="'+c.reason+'">'+c.reason+'</td>'
+      +'<td class="c2-delta '+cls+'">'+(c.delta<0?'':'+'+'')+fBtc(c.delta)+'</td>'
+      +'<td class="c2-del"><button class="delbtn" onclick="delCorrection(this.dataset.id)" data-id="'+c.id+'">✕</button></td>'
+      +'</tr>';
+  }).join('');
+  const totCls=tot>=0?'cd-pos':'cd-neg';
+  wrap.innerHTML='<table class="corr-t2">'
+    +'<thead><tr><th>Data</th><th>Motivo</th><th style="text-align:right">Δ BTC</th><th></th></tr></thead>'
+    +'<tbody>'+rh+'</tbody>'
+    +'<tfoot><tr>'
+    +'<td colspan="2" class="c2-tot-lbl">Totale netto</td>'
+    +'<td class="c2-delta '+totCls+'" style="text-align:right">'+(tot<0?'':'+'+'')+fBtc(tot)+'</td>'
+    +'<td></td></tr></tfoot></table>';
+}
+
+// ═══ SIMULATORE 730 ═══
+
+function getAvailableLots() {
+  const a = getLotAvailability(); // già include correzioni negative in FIFO
+  return [...rows]
+    .sort((x,y) => x.date.localeCompare(y.date))
+    .map(r => ({ rowId:r.id, date:r.date, btcAvail:a[r.id], btcTot:r.btc, rate:r.rate }))
+    .filter(l => l.btcAvail > 1e-9);
+}
+
+function getBtcEff() {
+  const tB = rows.reduce((s,r)=>s+r.btc,0);
+  const tC = corrections.reduce((s,c)=>s+c.delta,0);
+  const tS = sales.reduce((s,sl)=>s+sl.btcSold,0);
+  return Math.max(0, tB+tC-tS);
+}
+
+function updateSimPortfolio() {
+  if(!rows.length) {
+    ['sp_inv','sp_btc','sp_avg','sp_val','sp_gain','sp_net'].forEach(id=>{
+      const e=el(id); if(e){e.textContent='—';e.className='side-val';}
+    });
+    return;
+  }
+  const btc      = btcNow();
+  const totEurAll= rows.reduce((s,r)=>s+r.eur,0);
+  const totCostS = sales.reduce((s,sl)=>s+(sl.revenue-sl.gain),0);
+  const totBtc   = rows.reduce((s,r)=>s+r.btc,0);
+  const tC       = corrections.reduce((s,c)=>s+c.delta,0);
+  const tS       = sales.reduce((s,sl)=>s+sl.btcSold,0);
+  const btcEff   = Math.max(0,totBtc+tC-tS);
+  const totEurRaw2 = Math.max(0,totEurAll-totCostS);
+  const totEur   = btcEff<1e-9?0:totEurRaw2;
+  const avg      = btcEff>0?totEur/btcEff:0;
+  const val      = btcEff*btc;
+  const gross    = val-totEur;
+  const tax      = gross>0?gross*0.26:0;
+  const net      = totEur+gross-tax;
+  const pct      = totEur>0?gross/totEur:0;
+
+  set('sp_inv',fEur(totEur));
+  el('sp_btc').textContent=fBtc(btcEff); el('sp_btc').className='side-val btc';
+  set('sp_avg',avg>0?fEur(avg,0):'—');
+  el('sp_val').textContent=fEur(val); el('sp_val').className='side-val btc';
+  el('sp_gain').textContent=(gross>=0?'+':'')+fEur(gross)+' ('+fPct(pct)+')';
+  el('sp_gain').className='side-val '+(gross>=0?'green':'red');
+  el('sp_net').textContent=fEur(net);
+  el('sp_net').className='side-val lg '+(net>=totEur?'green':'red');
+}
+
+function renderFiscalYear() {
+  const fyCard = el('fyCard'), iCard = el('ivafeCurCard');
+  if(!sales.length){ if(fyCard)fyCard.style.display='none'; if(iCard)iCard.style.display='none'; return; }
+  if(fyCard) fyCard.style.display='';
+  if(iCard)  iCard.style.display='';
+
+  // IVAFE corrente
+  const btcEff = getBtcEff();
+  const valNow  = btcEff * btcNow();
+  const ivafe   = valNow * 0.002;
+  el('ivafe_val').textContent = fEur(valNow); el('ivafe_val').className='side-val btc';
+  el('ivafe_est').textContent = fEur(ivafe);  el('ivafe_est').className='side-val lg amber';
+
+  // Raggruppa vendite per anno
+  const byYear = {};
+  sales.forEach(s=>{
+    const yr = s.date.slice(0,4);
+    if(!byYear[yr]) byYear[yr]={gain:0,tax:0,loss:0,revenue:0};
+    byYear[yr].revenue += s.revenue;
+    if(s.gain>=0){ byYear[yr].gain+=s.gain; byYear[yr].tax+=s.tax; }
+    else { byYear[yr].loss+=Math.abs(s.gain); }
+  });
+
+  const years = Object.keys(byYear).sort();
+  const totGain = years.reduce((s,y)=>s+byYear[y].gain,0);
+  const totTax  = years.reduce((s,y)=>s+byYear[y].tax,0);
+  const totLoss = years.reduce((s,y)=>s+byYear[y].loss,0);
+
+  const rows_html = years.map(yr=>{
+    const d = byYear[yr];
+    const netGain = d.gain - d.loss;
+    const hasLoss = d.loss > 0;
+    return '<tr>'
+      +'<td>'+yr+'</td>'
+      +'<td>'+fEur(d.revenue)+'</td>'
+      +'<td class="'+(d.gain>0?'fy-pos':'fy-dim')+'">'+(d.gain>0?'+'+fEur(d.gain):fEur(0))+'</td>'
+      +'<td class="'+(d.loss>0?'fy-neg':'fy-dim')+'">'+(d.loss>0?'−'+fEur(d.loss):'—')+'</td>'
+      +'<td class="'+(d.tax>0?'fy-amber':'fy-dim')+'">'+(d.tax>0?fEur(d.tax):'—')+'</td>'
+      +(yr>='2023'?'<td class="fy-amber" style="font-size:.7rem">0,2% val.31/12</td>':'<td class="fy-dim">—</td>')
+      +'</tr>';
+  }).join('');
+
+  el('fyTableWrap').innerHTML = '<table class="fy-table">'
+    +'<thead><tr><th style="text-align:left">Anno</th><th>Ricavi</th><th>Plusvalenze</th><th>Minusvalenze</th><th>Imposta 26%</th><th>IVAFE</th></tr></thead>'
+    +'<tbody>'+rows_html+'</tbody>'
+    +'<tfoot><tr>'
+    +'<td>Totali</td>'
+    +'<td>'+fEur(years.reduce((s,y)=>s+byYear[y].revenue,0))+'</td>'
+    +'<td class="'+(totGain>0?'fy-pos':'fy-dim')+'">'+(totGain>0?'+'+fEur(totGain):'—')+'</td>'
+    +'<td class="'+(totLoss>0?'fy-neg':'fy-dim')+'">'+(totLoss>0?'−'+fEur(totLoss):'—')+'</td>'
+    +'<td class="'+(totTax>0?'fy-amber':'fy-dim')+'">'+(totTax>0?fEur(totTax):'—')+'</td>'
+    +'<td>—</td>'
+    +'</tr></tfoot></table>';
+
+  // Alert RT94 se ci sono minusvalenze
+  const alerts = el('fyAlerts');
+  if(alerts){
+    let html = '';
+    years.forEach(yr=>{
+      if(byYear[yr].loss>0)
+        html+='<div class="fiscal-alert warn" style="margin-top:.5rem"><span class="fiscal-alert-icon">⚠</span>'
+          +'<span>'+yr+': minusvalenza di <b>'+fEur(byYear[yr].loss)+'</b> — riportabile fino al '+(parseInt(yr)+4)+'. Indica in RT94.</span></div>';
+    });
+    alerts.innerHTML = html;
+  }
+}
+
+function updateSimStatic() {
+  const btcEff=getBtcEff();
+  set('sim_cur_btc', rows.length?fBtc(btcEff):'—');
+  set('sim_avail_hint', rows.length?'disponibili: '+fBtc(btcEff)+' BTC (dopo vendite già registrate)':'nessun acquisto nella Dashboard');
+  set('sim_price_hint', btcNow()>0?'prezzo live: '+fEur(btcNow(),0)+'/BTC':'');
+  updateSimPortfolio();
+  renderFiscalYear();
+}
+
+function simSellAll() {
+  // Usa getBtcEff che è il saldo reale (acquisti + correzioni - vendute)
+  const btcEff = getBtcEff();
+  if(btcEff<=0){ toast('Nessun BTC disponibile','warn'); return; }
+  // Arrotonda al satoshi inferiore per evitare errori floating point
+  el('sim_btc').value = (Math.round(btcEff * 1e8) / 1e8).toFixed(8);
+  calcSim();
+}
+
+function calcSim() {
+  _lastSim=null;
+  const applyBtn=el('simApplyBtn'); if(applyBtn) applyBtn.style.display='none';
+
+  const simBtc  =parseFloat(el('sim_btc').value);
+  const simPrice=parseFloat(el('sim_price').value);
+  const btcEff  =getBtcEff();
+  const ov=el('simOverview'), lb=el('simLotsBox');
+
+  if(!simBtc||simBtc<=0||!simPrice||simPrice<=0) {
+    if(ov)ov.style.display='none'; if(lb)lb.style.display='none';
+    set('sim_hint','inserisci quanti BTC vuoi vendere e a che prezzo — calcolo FIFO istantaneo');
+    set('sim_sell_btc','—'); set('sim_rem_btc','—');
+    set('sim_side_revenue','—'); set('sim_side_tax','—'); set('sim_side_net','—');
+    return;
+  }
+  if(!rows.length) {
+    set('sim_hint','⚠ Nessun acquisto registrato — aggiungi acquisti dalla Dashboard');
+    if(ov)ov.style.display='none'; if(lb)lb.style.display='none'; return;
+  }
+  const lotAvail=getAvailableLots().reduce((s,l)=>s+l.btcAvail,0);
+  if(simBtc>btcEff+1e-9) {
+    set('sim_hint','⚠ Hai solo '+fBtc(btcEff)+' BTC disponibili');
+    if(ov)ov.style.display='none'; if(lb)lb.style.display='none'; return;
+  }
+  if(simBtc>lotAvail+1e-9) {
+    set('sim_hint','⚠ I lotti acquisto coprono solo '+fBtc(lotAvail)+' BTC (le fee ne hanno sottratti '+fBtc(btcEff-lotAvail)+')');
+    if(ov)ov.style.display='none'; if(lb)lb.style.display='none'; return;
+  }
+
+  // ── FIFO ──
+  const avLots=getAvailableLots();
+  let rem=simBtc, cost=0;
+  const used=[];
+  for(const lot of avLots){
+    if(rem<=1e-9) break;
+    const u=Math.min(lot.btcAvail,rem);
+    const lc=u*lot.rate;
+    cost+=lc;
+    used.push({rowId:lot.rowId,date:lot.date,btcTot:lot.btcTot,btcAvail:lot.btcAvail,
+               btcUsed:u,rate:lot.rate,cost:lc,partial:u<lot.btcAvail-1e-9});
+    rem-=u;
+  }
+
+  const revenue=simBtc*simPrice;
+  const gain   =revenue-cost;
+  const tax    =Math.max(0,gain)*0.26;
+  const netRev =revenue-tax;
+  const remBtc =btcEff-simBtc;
+
+  _lastSim={date:new Date().toISOString().slice(0,10),btcSold:simBtc,price:simPrice,
+    revenue,gain,tax,lots:used.map(l=>({rowId:l.rowId,btcUsed:l.btcUsed}))};
+
+  // ── Panoramica hero ──
+  if(ov) ov.style.display='';
+
+  // Blocco 1: Ricavo lordo
+  const gn=el('sim_gain_num');
+  if(gn){ gn.textContent=fEur(revenue); gn.className='sim-hero-num btc'; }
+  set('sim_gain_sub', fBtc(simBtc)+' BTC × '+fEur(simPrice,0)+'/BTC');
+
+  const tn=el('sim_tax_num');
+  if(tn){ tn.textContent=fEur(tax); tn.className='sim-hero-num amber'+(tax<=0?' dim':''); }
+  const tb=el('simTaxBox');
+  if(tb) tb.className='sim-hero-block sim-hero-tax'+(tax<=0?' muted':'');
+  set('sim_tax_sub',tax>0?'da versare con Modello Redditi PF':gain<0?'minusvalenza — nessuna imposta':'nessuna plusvalenza');
+
+  const nn=el('sim_net_num');
+  if(nn){ nn.textContent=fEur(netRev); nn.className='sim-hero-num '+(netRev>0?'pos':'neg'); }
+  set('sim_net_sub', fEur(revenue)+' − '+fEur(tax));
+
+  // ── Flow strip ──
+  set('sf_revenue',fEur(revenue));
+  el('sf_revenue').className='sf-val btc';
+  set('sf_revenue_sub',fBtc(simBtc)+' × '+fEur(simPrice,0));
+  set('sf_cost',fEur(cost));
+  el('sf_cost').className='sf-val dim';
+  set('sf_cost_sub',used.length+(used.length===1?' lotto':' lotti')+' FIFO');
+  el('sf_gain').textContent=(gain>=0?'+':'')+fEur(gain);
+  el('sf_gain').className='sf-val '+(gain>=0?'green':'red');
+  set('sf_tax',fEur(tax));
+  el('sf_tax').className='sf-val '+(tax>0?'amber':'dim');
+  el('sf_net').textContent=fEur(netRev);
+  el('sf_net').className='sf-val '+(netRev>0?'green':'red');
+  // result border color
+  const sfRes=document.querySelector('.sim-flow-item.sf-result');
+  if(sfRes) sfRes.style.borderLeftColor=netRev>0?'var(--green)':'var(--red)';
+
+  // ── Nota ──
+  set('sim_note', gain<0
+    ? 'Minusvalenza di '+fEur(Math.abs(gain))+' — non tassata, riportabile nei 4 anni successivi (rigo RT94).'
+    : 'Plusvalenza di '+fEur(gain)+' → imposta '+fEur(tax)+'. Indicare nel quadro RT, rigo RT30.');
+
+  // ── Side saldo ──
+  set('sim_sell_btc',fBtc(simBtc));
+  el('sim_rem_btc').textContent=fBtc(remBtc);
+  el('sim_rem_btc').className='side-val lg '+(remBtc>0?'':'red');
+  el('sim_side_revenue').textContent=fEur(revenue);
+  el('sim_side_revenue').className='side-val btc';
+  el('sim_side_tax').textContent=fEur(tax);
+  el('sim_side_tax').className='side-val '+(tax>0?'amber':'dim');
+  const sideNet=revenue-tax;
+  el('sim_side_net').textContent=fEur(sideNet);
+  el('sim_side_net').className='side-val '+(sideNet>0?'green':'red');
+
+  // ── Quadro RT ──
+  set('rt21',fEur(revenue));
+  set('rt22',fEur(cost)); el('rt22').className='rt-val dim';
+  el('rt23').textContent=(gain>=0?'+':'')+fEur(Math.max(0,gain));
+  el('rt23').className='rt-val '+(gain>0?'pos':'dim');
+  el('rt30').textContent=fEur(tax);
+  el('rt30').className='rt-val '+(tax>0?'amber':'dim');
+  // RT94 minusvalenza
+  const rt94row=el('rt94row');
+  if(rt94row){
+    if(gain<0){
+      rt94row.style.display='';
+      set('rt94',fEur(Math.abs(gain)));
+    } else { rt94row.style.display='none'; }
+  }
+
+  // ── Tabella FIFO ──
+  if(lb) lb.style.display='';
+  set('simLotsTitle',used.length+' lott'+(used.length===1?'o':'i')+' coinvolt'+(used.length===1?'o':'i'));
+
+  // Calcola disponibilità per display (solo vendite, senza correzioni)
+  const availDisplay = getLotSalesOnlyAvailability();
+
+  const rh=used.map(l=>{
+    const lg=l.btcUsed*simPrice-l.cost;
+    const d=l.date.split('-').reverse().join('/');
+    // "già venduti" basato solo su vendite esplicite (no correzioni)
+    const btcAvailDisplay = availDisplay[l.rowId] ?? l.btcTot;
+    const prevSales = l.btcTot - btcAvailDisplay;
+    // Badge intero/parziale basato su disponibilità interna (include correzioni)
+    // "di X disp." mostra la disponibilità display (solo vendite)
+    const prevNote=prevSales>1e-9?'<span style="font-size:.62rem;color:var(--text3);margin-left:.35rem">(già venduti '+fBtc(prevSales)+')</span>':'';
+    return '<tr class="'+(l.partial?'fifo-partial':'fifo-full')+'">'
+      +'<td style="padding-left:1.2rem">'+d+prevNote
+        +'<span class="fifo-badge '+(l.partial?'partial':'full')+'">'+(l.partial?'parziale':'intero')+'</span></td>'
+      +'<td>'+fBtc(l.btcUsed)+(l.partial?'<span style="color:var(--text3);font-size:.7rem"> di '+fBtc(btcAvailDisplay)+'</span>':'')+'</td>'
+      +'<td style="color:var(--text3)">'+fEur(l.rate,0)+'</td>'
+      +'<td>'+fEur(l.cost)+'</td>'
+      +'<td class="'+(lg>=0?'fifo-gain-pos':'fifo-gain-neg')+'">'+(lg>=0?'+':'')+fEur(lg)+'</td>'
+      +'</tr>';
+  }).join('');
+
+  el('simLotsWrap').innerHTML='<table class="fifo-t">'
+    +'<thead><tr>'
+    +'<th style="text-align:left;padding-left:1.2rem">Data acquisto</th>'
+    +'<th>BTC usati</th><th>€/BTC acquisto</th><th>Costo FIFO</th><th>Gain lotto</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rh+'</tbody>'
+    +'<tfoot><tr>'
+    +'<td style="padding-left:1.2rem;text-align:left">Totale</td>'
+    +'<td>'+fBtc(simBtc)+'</td><td></td>'
+    +'<td>'+fEur(cost)+'</td>'
+    +'<td class="'+(gain>=0?'fifo-gain-pos':'fifo-gain-neg')+'">'+(gain>=0?'+':'')+fEur(gain)+'</td>'
+    +'</tr></tfoot></table>';
+
+  set('sim_hint','');
+  if(applyBtn) applyBtn.style.display='';
+}
+
+function applySale() {
+  if(!_lastSim){ toast('Calcola prima la vendita','err'); return; }
+  const s=_lastSim;
+  const d=s.date.split('-').reverse().join('/');
+  const msg='Registrare la vendita di '+fBtc(s.btcSold)+' BTC a '+fEur(s.price,0)+'/BTC del '+d+'? Ricavo: '+fEur(s.revenue)+' · Imposta: '+fEur(s.tax);
+  confirm2('✅','Conferma vendita',msg, ()=>{
+    sales.push({...s,id:uid()});
+    el('sim_btc').value='';
+    el('sim_price').value=btcNow()||'';
+    _lastSim=null;
+    const applyBtn=el('simApplyBtn'); if(applyBtn) applyBtn.style.display='none';
+    const ov=el('simOverview'); if(ov) ov.style.display='none';
+    const lb=el('simLotsBox'); if(lb) lb.style.display='none';
+    set('sim_hint','✓ Vendita registrata — inserisci una nuova simulazione');
+    set('sim_sell_btc','—'); set('sim_rem_btc','—');
+    set('sim_side_revenue','—'); set('sim_side_tax','—'); set('sim_side_net','—');
+    updateSimStatic();
+    renderSalesHist();
+    render(); saveAll();
+    toast('Vendita registrata ✓','ok');
+  },'Conferma vendita');
+}
+
+function deleteSale(id) {
+  const s=sales.find(x=>x.id===id); if(!s) return;
+  const d=s.date.split('-').reverse().join('/');
+  confirm2('🗑️','Elimina vendita','Eliminare la vendita del '+d+' ('+fBtc(s.btcSold)+' BTC)?',
+    ()=>{ sales=sales.filter(x=>x.id!==id); renderSalesHist(); updateSimStatic(); render(); saveAll(); toast('Vendita eliminata','warn'); },'Elimina');
+}
+
+function renderSalesHist() {
+  const box=el('salesHistBox'), wrap=el('salesHistWrap'), cnt=el('salesHistCount');
+  if(!box||!wrap) return;
+  if(!sales.length){ box.style.display='none'; return; }
+  box.style.display='';
+  if(cnt) cnt.textContent=sales.length+(sales.length===1?' vendita':' vendite');
+  const totR=sales.reduce((s,sl)=>s+sl.revenue,0);
+  const totT=sales.reduce((s,sl)=>s+sl.tax,0);
+  const totG=sales.reduce((s,sl)=>s+sl.gain,0);
+  const rh=sales.map(s=>{
+    const d=s.date.split('-').reverse().join('/');
+    const net=s.revenue-s.tax;
+    return '<div class="sale-row" onclick="openSaleDetail(this.dataset.id)" data-id="'+s.id+'" style="cursor:pointer">'
+      +'<span style="color:var(--text2);min-width:5.5rem;flex-shrink:0">'+d+'</span>'
+      +'<span style="color:var(--btc);flex-shrink:0">'+fBtc(s.btcSold)+' BTC</span>'
+      +'<span style="color:var(--text3);flex-shrink:0">@ '+fEur(s.price,0)+'</span>'
+      +'<span style="color:var(--text2)">'+fEur(s.revenue)+'</span>'
+      +'<span style="flex:1;text-align:right;color:'+(s.gain>=0?'var(--green)':'var(--red)')+';font-weight:700">'+(s.gain>=0?'+':'')+fEur(s.gain)+'</span>'
+      +'<span style="color:var(--amber);min-width:5rem;text-align:right">'+fEur(s.tax)+'</span>'
+      +'<span style="color:var(--text4);font-size:.65rem;flex-shrink:0">↗</span>'
+      +'</div>';
+  }).join('');
+  wrap.innerHTML=rh
+    +'<div style="display:flex;gap:1.5rem;padding:.72rem 1.2rem;background:var(--bg2);border-top:2px solid var(--amber-brd);font-family:var(--mono);font-size:.78rem;flex-wrap:wrap">'
+    +'<span style="color:var(--text3)">Totali</span>'
+    +'<span><span style="color:var(--text3)">ricavi </span><span style="color:var(--btc);font-weight:700">'+fEur(totR)+'</span></span>'
+    +'<span><span style="color:var(--text3)">gain </span><span style="color:'+(totG>=0?'var(--green)':'var(--red)')+';font-weight:700">'+(totG>=0?'+':'')+fEur(totG)+'</span></span>'
+    +'<span><span style="color:var(--text3)">imposte </span><span style="color:var(--amber);font-weight:700">'+fEur(totT)+'</span></span>'
+    +'</div>';
+}
+
+// ═══ DICHIARAZIONE PER IL POSSESSO ═══
+// Prezzi storici approssimativi BTC al 31/12 (fonte: CoinGecko/Coinbase)
+const HIST_PRICES = {
+  '2013':563,'2014':290,'2015':368,'2016':842,'2017':13800,
+  '2018':3200,'2019':6700,'2020':23400,'2021':43800,'2022':15600,
+  '2023':38500,'2024':88000
+};
+// Prezzi editati dall'utente
+let userPrices = {};
+
+function getYearEndBtc(yr) {
+  // BTC posseduti al 31/12 dell'anno yr
+  // = acquisti entro 31/12/yr + correzioni entro 31/12/yr - vendite entro 31/12/yr
+  const cutoff = yr + '-12-31';
+  const tB = rows.filter(r=>r.date<=cutoff).reduce((s,r)=>s+r.btc,0);
+  const tC = corrections.filter(c=>c.date<=cutoff).reduce((s,c)=>s+c.delta,0);
+  const tS = sales.filter(s=>s.date<=cutoff).reduce((s,sl)=>s+sl.btcSold,0);
+  return Math.max(0, tB+tC-tS);
+}
+
+function renderHoldingDecl() {
+  const section = el('holdingDeclSection');
+  if(!rows.length){ if(section) section.style.display='none'; return; }
+  if(section) section.style.display='';
+
+  const firstYear = parseInt(rows[0].date.slice(0,4));
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for(let y=firstYear; y<=currentYear; y++) years.push(String(y));
+
+  const tbody = el('holdingRows');
+  const tfoot = el('holdingFoot');
+  if(!tbody) return;
+
+  let totIvafe = 0, totVal = 0;
+
+  tbody.innerHTML = years.map(yr=>{
+    const btcHeld = getYearEndBtc(yr);
+    if(btcHeld < 1e-9 && yr < String(currentYear)) return ''; // skip years with 0 BTC
+    const isCurrent = yr === String(currentYear);
+    const hasIvafe = yr >= '2023';
+
+    // Prezzo: custom > storico > placeholder
+    const histP = HIST_PRICES[yr] || 0;
+    const priceVal = userPrices[yr] !== undefined ? userPrices[yr] : histP;
+    const val = btcHeld * priceVal;
+    const ivafe = hasIvafe && val > 0 ? val * 0.002 : 0;
+    // Non sommiamo i valori fra anni (sarebbero gli stessi BTC contati più volte)
+    // Sommiamo solo l'IVAFE che è effettivamente dovuta per ogni anno
+    totIvafe += ivafe;
+
+    const tag = isCurrent
+      ? '<span class="yr-tag active">anno in corso</span>'
+      : '<span class="yr-tag past">storico</span>';
+
+    const note = isCurrent
+      ? 'Prezzo attuale — aggiorna al 31/12'
+      : (histP > 0 ? 'Prezzo stimato' : 'Inserisci prezzo');
+
+    return '<tr>'
+      +'<td>'+yr+tag+'</td>'
+      +'<td class="hd-btc">'+fBtc(btcHeld)+'</td>'
+      +'<td><input class="price-inp" type="number" min="0" step="100" value="'+(priceVal||'')+'" placeholder="€/BTC" data-yr="'+yr+'" oninput="onPriceInput(this)"></td>'
+      +'<td class="hd-val">'+(val>0?fEur(val):'—')+'</td>'
+      +'<td class="hd-ivafe'+(hasIvafe&&ivafe>0?'':' none')+'">'+(hasIvafe?(ivafe>0?fEur(ivafe):'inserisci prezzo'):'— (pre-2023)')+'</td>'
+      +'<td class="hd-rw">'+( btcHeld>0?'✓ Obblig.':'—')+'</td>'
+      +'<td class="hd-note">'
+        +'<button onclick="openHoldingYear(\''+yr+'\')" style="font-family:var(--sans);font-size:.72rem;padding:.22rem .62rem;border-radius:var(--r-sm);border:1px solid var(--line2);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor=\'var(--btc)\';this.style.color=\'var(--btc)\'" onmouseout="this.style.borderColor=\'\';this.style.color=\'\'">📋 Dettaglio</button>'
+      +'</td>'
+      +'</tr>';
+  }).filter(Boolean).join('');
+
+  if(tfoot){
+    tfoot.style.display = '';
+    el('hd_tot_ivafe').textContent = totIvafe>0?fEur(totIvafe):'—';
+    if(totIvafe>0) el('hd_tot_ivafe').className='fy-amber';
+  }
+}
+
+function onPriceInput(inp) {
+  const yr = inp.dataset.yr;
+  const rawVal = parseFloat(inp.value);
+  const price = isNaN(rawVal)||rawVal<0 ? 0 : rawVal;
+  userPrices[yr] = price;
+
+  // Aggiorna solo la riga interessata senza ricostruire la tabella
+  const row = inp.closest('tr');
+  if(!row) return;
+  const btcHeld = getYearEndBtc(yr);
+  const val = btcHeld * price;
+  const hasIvafe = yr >= '2023';
+  const ivafe = hasIvafe && val > 0 ? val * 0.002 : 0;
+
+  const cells = row.querySelectorAll('td');
+  // td: 0=anno, 1=btc, 2=input, 3=valore, 4=ivafe, 5=rw, 6=note
+  if(cells[3]) cells[3].textContent = val>0 ? fEur(val) : '—';
+  if(cells[4]){
+    if(hasIvafe){
+      cells[4].textContent = val>0 ? fEur(ivafe) : 'inserisci prezzo';
+      cells[4].className = 'hd-ivafe'+(ivafe>0?'':' none');
+    }
+  }
+
+  // Ricalcola totali
+  let totVal=0, totIvafe=0;
+  document.querySelectorAll('#holdingRows tr').forEach(tr=>{
+    const inp2 = tr.querySelector('.price-inp');
+    const yr2  = inp2 ? inp2.dataset.yr : null;
+    if(!yr2) return;
+    const p2 = userPrices[yr2] !== undefined ? userPrices[yr2] : (HIST_PRICES[yr2]||0);
+    const b2 = getYearEndBtc(yr2);
+    const v2 = b2*p2;
+    totVal += v2;
+    if(yr2>='2023') totIvafe += v2*0.002;
+  });
+  const tiEl=el('hd_tot_ivafe');
+  if(tiEl){ tiEl.textContent = totIvafe>0?fEur(totIvafe):'—'; tiEl.className=totIvafe>0?'fy-amber':''; }
+  // Salva i prezzi anno in localStorage (debounced)
+  clearTimeout(window._priceSaveTimer);
+  window._priceSaveTimer = setTimeout(()=>saveAll(), 800);
+}
+
+// ── Popup dettaglio anno — dichiarazione completa ──
+function openHoldingYear(yr) {
+  const btcHeld  = getYearEndBtc(yr);
+  const btcStart = yr==='2013' ? 0 : getYearEndBtc(String(parseInt(yr)-1));
+  const price    = userPrices[yr]!==undefined ? userPrices[yr] : (HIST_PRICES[yr]||0);
+  const priceS   = userPrices[String(parseInt(yr)-1)]!==undefined
+                   ? userPrices[String(parseInt(yr)-1)] : (HIST_PRICES[String(parseInt(yr)-1)]||0);
+  const valEnd   = btcHeld  * price;
+  const valStart = btcStart * priceS;
+  const hasIvafe = yr >= '2023';
+  const ivafe    = hasIvafe && valEnd>0 ? valEnd*0.002 : 0;
+  const isCurrent= yr===String(new Date().getFullYear());
+
+  const cutEnd   = yr+'-12-31';
+  const cutStart = (parseInt(yr)-1)+'-12-31';
+  const acqAnno  = rows.filter(r=>r.date>cutStart&&r.date<=cutEnd);
+  const vendAnno = sales.filter(s=>s.date>cutStart&&s.date<=cutEnd);
+  const gainAnno = vendAnno.reduce((s,sl)=>s+sl.gain,0);
+  const taxAnno  = vendAnno.reduce((s,sl)=>s+sl.tax,0);
+  const revAnno  = vendAnno.reduce((s,sl)=>s+sl.revenue,0);
+  const costAnno = vendAnno.reduce((s,sl)=>s+(sl.revenue-sl.gain),0);
+
+  // Minusvalenze anni precedenti ancora riportabili
+  const minsPrecByYear = {};
+  sales.filter(s=>s.date<=cutStart&&s.gain<0).forEach(s=>{
+    const y=s.date.slice(0,4);
+    minsPrecByYear[y]=(minsPrecByYear[y]||0)+Math.abs(s.gain);
+  });
+  const totMinsPrec = Object.values(minsPrecByYear).reduce((s,v)=>s+v,0);
+  const maxComp = Math.max(0, gainAnno>0 ? Math.min(totMinsPrec, gainAnno) : 0);
+  const rt25 = Math.max(0, gainAnno - maxComp);
+
+  set('hy_title','Anno '+yr+(isCurrent?' — Anno in corso':' — Riepilogo dichiarazione'));
+
+  const noPrice = price<=0;
+  const noPriceS= priceS<=0;
+
+  // helpers
+  const row2=(l,v,vc,extra='')=>'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:.36rem 0;border-bottom:1px solid var(--line)">'
+    +'<span style="font-family:var(--sans);font-size:.77rem;color:var(--text3)">'+l+'</span>'
+    +'<span style="font-family:var(--mono);font-weight:700;font-size:.8rem;color:'+(vc||'var(--text)')+'">'+v+'</span>'
+    +'</div>';
+  const codeRow=(code,desc,val,vc)=>'<div style="display:flex;gap:.5rem;align-items:baseline;padding:.36rem 0;border-bottom:1px solid var(--line)">'
+    +'<span style="font-family:var(--mono);font-size:.68rem;background:var(--bg3);border:1px solid var(--line2);border-radius:4px;padding:.1rem .38rem;color:var(--btc);flex-shrink:0">'+code+'</span>'
+    +'<span style="font-family:var(--sans);font-size:.76rem;color:var(--text3);flex:1">'+desc+'</span>'
+    +'<span style="font-family:var(--mono);font-size:.78rem;font-weight:700;color:'+(vc||'var(--text)')+'">'+val+'</span>'
+    +'</div>';
+  const sec=(t,col)=>'<div style="font-family:var(--sans);font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:'+col+';margin:1rem 0 .45rem;padding-top:.55rem;border-top:2px solid var(--line2)">'+t+'</div>';
+  const chip=(t,col,bg)=>'<span style="display:inline-block;font-family:var(--mono);font-size:.65rem;padding:.1rem .45rem;border-radius:99px;background:'+bg+';border:1px solid '+col+';color:'+col+';margin-left:.4rem">'+t+'</span>';
+  const note=(ico,txt,col,bg)=>'<div style="display:flex;gap:.5rem;padding:.6rem .8rem;border-radius:6px;background:'+(bg||'var(--bg2)')+';border:1px solid '+(col||'var(--line2)')+';margin:.5rem 0;font-family:var(--sans);font-size:.74rem;color:var(--text2);line-height:1.6"><span>'+ico+'</span><span>'+txt+'</span></div>';
+
+  let html='';
+
+  // ══ QUADRO RW ══
+  html+=sec('Quadro RW — Monitoraggio fiscale e IVAFE','var(--btc)');
+  html+=note('ℹ','Obbligatorio per tutti i detentori di cripto-attività, inclusi chi usa <b>Ledger o altri hardware wallet</b>. Secondo la Circ. AdE 30/E/2023 le cripto sono considerate "detenute all\'estero" per natura (blockchain senza giurisdizione italiana), quindi il Quadro RW si compila <b>sempre</b>. Art. 4 D.L. 167/1990.','var(--btc-brd)','var(--btc-dim)');
+
+  html+='<div style="background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:.75rem 1rem;margin:.5rem 0">';
+  html+=codeRow('Col.1','Tipo di detenzione','1 = diretta','var(--text)');
+  html+=codeRow('Col.2','Codice paese estero (exchange)','Binance → MT (Malta) / KY (Cayman)','var(--text)');
+  html+=codeRow('Col.3','Codice paese terzo','','var(--text3)');
+  html+=codeRow('Col.4','Quota di possesso (%)','100%','var(--text)');
+  html+=codeRow('Col.5','Natura dell\'investimento','14 = cripto-attività (dal 2023)','var(--text)');
+  html+=codeRow('Col.6','Criterio valorizzazione','4 = valore di mercato','var(--text)');
+  html+=codeRow('Col.7','Valore al 1/1/'+yr+' (o data acquisto)',
+    btcStart>0 ? (noPriceS?'inserisci prezzo 31/12/'+(parseInt(yr)-1):fEur(valStart)) : '0 (primo anno)',
+    noPriceS&&btcStart>0?'var(--red)':'var(--text)');
+  html+=codeRow('Col.8 ★','Valore al 31/12/'+yr+' (o data cessione)',
+    noPrice?'⚠ inserisci il prezzo nella tabella':fEur(valEnd),
+    noPrice?'var(--red)':'var(--text)');
+  if(hasIvafe){
+    html+=codeRow('Col.15','IVAFE 0,2% × valore col.8',
+      noPrice?'— (compila col.8 prima)':fEur(ivafe),
+      noPrice?'var(--text3)':'var(--amber)');
+    html+=codeRow('Col.20','Credito d\'imposta IVAFE pagata all\'estero','0 (cripto non soggette a imp. estere)','var(--text3)');
+  } else {
+    html+=codeRow('Col.15','IVAFE','— non applicabile (ante 2023)','var(--text3)');
+  }
+  html+='</div>';
+
+  // Info Binance specifica
+  html+=note('🏦','<b>Binance specifica:</b> La giurisdizione cambia nel tempo. Binance.com → Malta (MT) fino al 2021, poi Cayman Islands (KY) o Francia (FR) per utenti EU. Verifica il codice fiscale sull\'estratto conto della piattaforma o nei Termini del contratto. Dal 2023 alcuni exchange offrono documentazione pre-compilata per il RW.','var(--amber-brd)','var(--amber-bg)');
+
+  html+=note('💡','<b>Valore al 31/12:</b> Usa il prezzo di chiusura del 31 dicembre che trovi su CoinGecko, Coinbase o Binance. La circolare AdE 30/E/2023 accetta il prezzo di mercato rilevabile da fonti pubbliche.','var(--line2)','var(--bg2)');
+
+  // ══ IVAFE (solo ≥2023) ══
+  if(hasIvafe){
+    html+=sec('Calcolo IVAFE — Imposta sul valore','var(--amber)');
+    html+='<div style="background:var(--amber-bg);border:1px solid var(--amber-brd);border-radius:8px;padding:.75rem 1rem;margin:.5rem 0">';
+    html+='<div style="font-family:var(--sans);font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:.45rem">IVAFE = Valore 31/12 × 0,2%</div>';
+    html+=row2('Valore al 31/12/'+yr+' (base imponibile)', noPrice?'— inserisci prezzo':''+fEur(valEnd), noPrice?'var(--red)':'var(--text)');
+    html+=row2('Aliquota', '0,2% (DL 201/2011 come modif. L. 197/2022)', 'var(--text)');
+    html+=row2('IVAFE dovuta', noPrice?'—':fEur(ivafe), noPrice?'var(--text3)':'var(--amber)');
+    html+=row2('Codice tributo F24', '4043 — Imposta su cripto-attività', 'var(--text)');
+    html+=row2('Scadenza versamento', 'Entro il termine delle imposte (giugno/luglio)', 'var(--text)');
+    html+='</div>';
+    html+=note('⚠','L\'IVAFE (0,2%) è dovuta indipendentemente da dove tieni i BTC: exchange, <b>Ledger</b>, Trezor o altro hardware wallet. La posizione ufficiale AdE (Circ. 30/E/2023) non distingue tra custodia su exchange e self-custody. Codice tributo F24: <b>4043</b>. Dal 2024 aliquota <b>1%</b> per exchange in paesi black-list (es. alcune giurisdizioni Binance).','var(--amber-brd)','var(--amber-bg)');
+  }
+
+  // ══ QUADRO RT ══
+  if(vendAnno.length>0){
+    html+=sec('Quadro RT Sez. II-bis — Plusvalenze cripto-attività','var(--green)');
+    html+=note('ℹ','Compila questa sezione nel <b>Modello Redditi PF</b> (non nel 730). Art. 67 c.1 lett. c-sexies TUIR. Aliquota 26% imposta sostitutiva.','var(--green-brd)','var(--green-bg)');
+    html+='<div style="background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:.75rem 1rem;margin:.5rem 0">';
+    html+=codeRow('RT21','Corrispettivi percepiti (ricavi lordi)',fEur(revAnno));
+    html+=codeRow('RT22','Costo o valore di acquisto (metodo FIFO)',fEur(costAnno),'var(--text2)');
+    html+=codeRow('RT23','Plusvalenza/Minusvalenza (RT21 − RT22)',
+      (gainAnno>=0?'+':'')+fEur(gainAnno), gainAnno>=0?'var(--green)':'var(--red)');
+    if(totMinsPrec>0&&gainAnno>0){
+      html+=codeRow('RT24','Minusvalenze anni prec. portate in detrazione',
+        maxComp>0?'−'+fEur(maxComp):'0 (non compensabili)','var(--text2)');
+      html+=codeRow('RT25','Imponibile netto (RT23 − RT24)',fEur(rt25));
+      html+=codeRow('RT29','Imposta lorda (RT25 × 26%)',fEur(rt25*0.26),'var(--amber)');
+    }
+    html+=codeRow('RT30','Imposta netta dovuta (26%)',
+      taxAnno>0?fEur(taxAnno):'€ 0,00 (perdita)', taxAnno>0?'var(--amber)':'var(--text3)');
+    if(gainAnno<0){
+      html+=codeRow('RT94','Minusvalenza riportabile (max 4 anni)',
+        fEur(Math.abs(gainAnno))+' — fino al '+(parseInt(yr)+4),'var(--red)');
+    }
+    html+='</div>';
+
+    html+=note('⚠','L\'imposta (RT30) va versata con <b>F24 codice tributo 1100</b> entro giugno dell\'anno successivo, oppure in autoliquidazione con il Modello Redditi. Le ritenute possono essere scomputate se l\'exchange italiano ha già applicato l\'imposta.','var(--line2)','var(--bg2)');
+
+    // Dettaglio vendite
+    html+='<div style="font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:.75rem 0 .4rem">Dettaglio vendite registrate</div>';
+    html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.76rem">'
+      +'<thead><tr style="background:var(--bg2)">'
+      +'<th style="padding:.35rem .55rem;text-align:left;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">Data</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">BTC</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">Prezzo</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">Ricavo</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">Costo FIFO</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">Gain</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--amber);border-bottom:1px solid var(--line)">Imp. 26%</th>'
+      +'</tr></thead><tbody>'
+      +vendAnno.map(s=>{const cost=s.revenue-s.gain;return '<tr style="border-bottom:1px solid var(--line)">'
+        +'<td style="padding:.38rem .55rem;color:var(--text2)">'+s.date.split('-').reverse().join('/')+'</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right;color:var(--btc)">'+fBtc(s.btcSold)+'</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right;color:var(--text3)">'+fEur(s.price,0)+'</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right">'+fEur(s.revenue)+'</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right;color:var(--text3)">'+fEur(cost)+'</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right;color:'+(s.gain>=0?'var(--green)':'var(--red)')+';font-weight:700">'+(s.gain>=0?'+':'')+fEur(s.gain)+'</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right;color:var(--amber)">'+fEur(s.tax)+'</td>'
+        +'</tr>';}).join('')
+      +'</tbody><tfoot><tr style="background:var(--bg2);border-top:2px solid var(--line2)">'
+      +'<td colspan="3" style="padding:.38rem .55rem;font-family:var(--sans);font-size:.62rem;color:var(--text3)">Totali anno</td>'
+      +'<td style="padding:.38rem .55rem;text-align:right;font-weight:700">'+fEur(revAnno)+'</td>'
+      +'<td style="padding:.38rem .55rem;text-align:right;font-weight:700;color:var(--text3)">'+fEur(costAnno)+'</td>'
+      +'<td style="padding:.38rem .55rem;text-align:right;font-weight:700;color:'+(gainAnno>=0?'var(--green)':'var(--red)')+'">'+(gainAnno>=0?'+':'')+fEur(gainAnno)+'</td>'
+      +'<td style="padding:.38rem .55rem;text-align:right;font-weight:700;color:var(--amber)">'+fEur(taxAnno)+'</td>'
+      +'</tr></tfoot></table></div>';
+  } else {
+    html+=sec('Quadro RT — Nessuna vendita','var(--text3)');
+    html+=note('✓','Nessuna plusvalenza/minusvalenza da dichiarare nel '+yr+'. Il Quadro RT non va compilato per quest\'anno.','var(--green-brd)','var(--green-bg)');
+  }
+
+  // ══ ACQUISTI ══
+  if(acqAnno.length){
+    html+=sec('Acquisti effettuati nel '+yr+' ('+acqAnno.length+')','var(--text3)');
+    html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.76rem">'
+      +'<thead><tr style="background:var(--bg2)">'
+      +'<th style="padding:.35rem .55rem;text-align:left;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">Data</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">BTC acquistati</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">Prezzo acquisto</th>'
+      +'<th style="padding:.35rem .55rem;text-align:right;font-family:var(--sans);font-size:.59rem;color:var(--text3);border-bottom:1px solid var(--line)">Investito (€)</th>'
+      +'</tr></thead><tbody>'
+      +acqAnno.map(r=>'<tr style="border-bottom:1px solid var(--line)">'
+        +'<td style="padding:.38rem .55rem;color:var(--text2)">'+r.date.split('-').reverse().join('/')+'</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right;color:var(--btc)">'+fBtc(r.btc)+'</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right;color:var(--text3)">'+fEur(r.rate,0)+'/BTC</td>'
+        +'<td style="padding:.38rem .55rem;text-align:right;font-weight:700">'+fEur(r.eur)+'</td>'
+        +'</tr>').join('')
+      +'</tbody></table></div>';
+  }
+
+  html+='<div style="font-size:.7rem;color:var(--text4);margin-top:1rem;font-style:italic;line-height:1.6;border-top:1px solid var(--line);padding-top:.75rem">⚠ Riepilogo a supporto del calcolo — non sostituisce la consulenza fiscale. Verifica i dati sul sito <b>agenziaentrate.gov.it</b> e nelle istruzioni ufficiali al Modello Redditi PF.</div>';
+
+  el('hy_body').innerHTML=html;
+  el('holdingYearOverlay').classList.add('open');
+}
+
+function closeHoldingYear(){ el('holdingYearOverlay').classList.remove('open'); }
+el('holdingYearOverlay').addEventListener('click',e=>{ if(e.target===el('holdingYearOverlay'))closeHoldingYear(); });
+let _saleDetailId = null;
+
+function openSaleDetail(id) {
+  const s=sales.find(x=>x.id===id); if(!s) return;
+  _saleDetailId=id;
+  const d=s.date.split('-').reverse().join('/');
+  const net=s.revenue-s.tax;
+  const costFifo=s.revenue-s.gain;
+  const lotsHtml=(s.lots||[]).map(l=>{
+    const row=rows.find(r=>r.id===l.rowId);
+    const rd=row?row.date.split('-').reverse().join('/'):'—';
+    const rr=row?fEur(row.rate,0):'—';
+    const lc=row?l.btcUsed*row.rate:0;
+    const lg=l.btcUsed*s.price-lc;
+    return '<tr style="border-bottom:1px solid var(--line)">'
+      +'<td style="padding:.4rem .6rem;font-family:var(--mono);font-size:.72rem;color:var(--text2)">'+rd+'</td>'
+      +'<td style="padding:.4rem .6rem;font-family:var(--mono);font-size:.72rem;color:var(--btc)">'+fBtc(l.btcUsed)+'</td>'
+      +'<td style="padding:.4rem .6rem;font-family:var(--mono);font-size:.72rem;color:var(--text3)">'+rr+'</td>'
+      +'<td style="padding:.4rem .6rem;font-family:var(--mono);font-size:.72rem;font-weight:700;color:'+(lg>=0?'var(--green)':'var(--red)')+'">'+( lg>=0?'+':'')+fEur(lg)+'</td>'
+      +'</tr>';
+  }).join('');
+  set('sd_title','Vendita del '+d);
+  el('sd_body').innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.42rem .9rem;margin-bottom:.9rem;padding-bottom:.9rem;border-bottom:1px solid var(--line)">'
+    +'<span style="color:var(--text3);font-size:.78rem">BTC venduti</span><span style="font-family:var(--mono);font-weight:700;color:var(--btc)">'+fBtc(s.btcSold)+'</span>'
+    +'<span style="color:var(--text3);font-size:.78rem">Prezzo vendita</span><span style="font-family:var(--mono);font-weight:700">'+fEur(s.price,0)+'/BTC</span>'
+    +'<span style="color:var(--text3);font-size:.78rem">Ricavo lordo</span><span style="font-family:var(--mono);font-weight:700;color:var(--btc)">'+fEur(s.revenue)+'</span>'
+    +'<span style="color:var(--text3);font-size:.78rem">Costo FIFO</span><span style="font-family:var(--mono)">'+fEur(costFifo)+'</span>'
+    +'<span style="color:var(--text3);font-size:.78rem">Plusvalenza</span><span style="font-family:var(--mono);font-weight:700;color:'+(s.gain>=0?'var(--green)':'var(--red)')+'">'+( s.gain>=0?'+':'')+fEur(s.gain)+'</span>'
+    +'<span style="color:var(--text3);font-size:.78rem">Imposta 26%</span><span style="font-family:var(--mono);color:var(--amber)">'+fEur(s.tax)+'</span>'
+    +'<span style="font-size:.8rem;font-weight:700;color:var(--text)">Netto in tasca</span>'
+    +'<span style="font-family:var(--mono);font-weight:700;font-size:1.05rem;color:'+(net>0?'var(--green)':'var(--red)')+'">'+fEur(net)+'</span>'
+    +'</div>'
+    +(lotsHtml
+      ?'<div style="font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.45rem">Lotti FIFO coinvolti</div>'
+        +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:6px;overflow:hidden">'
+        +'<thead><tr style="background:var(--bg2)"><th style="padding:.35rem .6rem;text-align:left;font-family:var(--sans);font-size:.62rem;color:var(--text3)">Data acq.</th>'
+        +'<th style="padding:.35rem .6rem;text-align:right;font-family:var(--sans);font-size:.62rem;color:var(--text3)">BTC usati</th>'
+        +'<th style="padding:.35rem .6rem;text-align:right;font-family:var(--sans);font-size:.62rem;color:var(--text3)">€/BTC acq.</th>'
+        +'<th style="padding:.35rem .6rem;text-align:right;font-family:var(--sans);font-size:.62rem;color:var(--text3)">Gain lotto</th>'
+        +'</tr></thead><tbody>'+lotsHtml+'</tbody></table></div>'
+      :'<div style="color:var(--text3);font-size:.75rem;font-style:italic">Dettaglio lotti non disponibile — vendita da versione precedente.</div>')
+    // ── Quadro RT ──
+    +'<div style="margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--line2)">'
+    +'<div style="font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--btc);margin-bottom:.5rem">Quadro RT — Modello Redditi PF</div>'
+    +'<div style="font-size:.7rem;color:var(--text3);margin-bottom:.6rem;line-height:1.5">Sez. II – Plusvalenze da cripto-attività · art. 67 c.1 lett. c-sexies TUIR</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.22rem">'
+    +'<div style="display:flex;align-items:baseline;justify-content:space-between;padding:.38rem 0;border-bottom:1px solid var(--line)">'
+    +'<span><b style="font-family:var(--mono);font-size:.68rem;color:var(--btc);margin-right:.4rem">RT21</b><span style="font-size:.76rem;color:var(--text2)">Corrispettivi percepiti</span></span>'
+    +'<span style="font-family:var(--mono);font-weight:700;font-size:.82rem">'+fEur(s.revenue)+'</span></div>'
+    +'<div style="display:flex;align-items:baseline;justify-content:space-between;padding:.38rem 0;border-bottom:1px solid var(--line)">'
+    +'<span><b style="font-family:var(--mono);font-size:.68rem;color:var(--btc);margin-right:.4rem">RT22</b><span style="font-size:.76rem;color:var(--text2)">Costo o valore d\'acquisto</span></span>'
+    +'<span style="font-family:var(--mono);font-size:.82rem;color:var(--text3)">'+fEur(costFifo)+'</span></div>'
+    +'<div style="display:flex;align-items:baseline;justify-content:space-between;padding:.38rem 0;border-bottom:1px solid var(--line)">'
+    +'<span><b style="font-family:var(--mono);font-size:.68rem;color:var(--btc);margin-right:.4rem">RT23</b><span style="font-size:.76rem;color:var(--text2)">Plusvalenza (RT21−RT22)</span></span>'
+    +'<span style="font-family:var(--mono);font-weight:700;font-size:.82rem;color:'+(s.gain>=0?'var(--green)':'var(--text3)')+'">'+( s.gain>=0?'+':'')+fEur(Math.max(0,s.gain))+'</span></div>'
+    +'<div style="display:flex;align-items:baseline;justify-content:space-between;padding:.5rem 0;border-top:2px solid var(--line2);margin-top:.15rem">'
+    +'<span><b style="font-family:var(--mono);font-size:.68rem;color:var(--btc);margin-right:.4rem">RT30</b><span style="font-size:.76rem;font-weight:700;color:var(--text)">Imposta dovuta (26%)</span></span>'
+    +'<span style="font-family:var(--mono);font-weight:700;font-size:.95rem;color:var(--amber)">'+fEur(s.tax)+'</span></div>'
+    +(s.gain<0
+      ?'<div style="display:flex;align-items:baseline;justify-content:space-between;padding:.38rem 0;margin-top:.1rem">'
+        +'<span><b style="font-family:var(--mono);font-size:.68rem;color:var(--red);margin-right:.4rem">RT94</b><span style="font-size:.76rem;color:var(--red)">Minusvalenza da riportare (4 anni)</span></span>'
+        +'<span style="font-family:var(--mono);font-weight:700;font-size:.82rem;color:var(--red)">'+fEur(Math.abs(s.gain))+'</span></div>'
+      :'')
+    +'</div>'
+    +'<div style="font-size:.68rem;color:var(--text4);margin-top:.7rem;font-style:italic;line-height:1.5">⚠ Dati indicativi a fini simulativi. Consulta un commercialista.</div>'
+    +'</div>';
+  el('saleDetailOverlay').classList.add('open');
+}
+function closeSaleDetail(){ el('saleDetailOverlay').classList.remove('open'); _saleDetailId=null; }
+function deleteSaleFromModal(){ if(!_saleDetailId) return; closeSaleDetail(); deleteSale(_saleDetailId); }
+el('saleDetailOverlay').addEventListener('click',e=>{ if(e.target===el('saleDetailOverlay'))closeSaleDetail(); });
+
+// ═══ NORMALIZZA VENDITE (backward compat) ═══
+// Le vendite vecchie potrebbero non avere 'gain' calcolato correttamente
+function normalizeSales(arr) {
+  return arr.map(s=>{
+    // Se gain non è definito o lots non c'è, tentiamo di calcolare da revenue/tax
+    if(typeof s.gain !== 'number') {
+      // gain = revenue * (1 - 0.26/0.26) non funziona → usiamo tax: gain = tax/0.26
+      s.gain = s.tax>0 ? s.tax/0.26 : 0;
+    }
+    if(!Array.isArray(s.lots)) s.lots = [];
+    if(!s.price && s.btcSold>0) s.price = s.revenue/s.btcSold;
+    return s;
+  });
+}
+
+function saveAll() {
+  localStorage.setItem(LS, JSON.stringify({prices:{btc:btcNow()},rows,corrections,sales,yearPrices:userPrices,savedAt:new Date().toISOString()}));
+  const d=new Date();
+  set('saveLabel',d.toLocaleDateString('it-IT')+' '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'));
+}
+function loadAll() {
+  const raw=localStorage.getItem(LS)||localStorage.getItem('btctracker_v4');
+  if(!raw) return;
+  try {
+    const d=JSON.parse(raw);
+    if(d.prices?.btc && d.prices.btc>0) el('btcPrice').value=d.prices.btc;
+    if(Array.isArray(d.rows)){
+      rows=d.rows.map(r=>({
+        id:   r.id||uid(), date:r.date||'2020-01-01',
+        eur:  Number(r.eur)||0, btc:Number(r.btc)||0,
+        rate: Number(r.rate)||(r.eur&&r.btc?r.eur/r.btc:0)
+      })).filter(r=>r.btc>0&&r.eur>0);
+    }
+    corrections=Array.isArray(d.corrections)
+      ? d.corrections.map(c=>({id:c.id||uid(),date:c.date||'2020-01-01',delta:Number(c.delta)||0,reason:c.reason||'Correzione'})).filter(c=>c.delta!==0)
+      : [];
+    sales=normalizeSales(Array.isArray(d.sales)?d.sales:[]);
+    if(d.yearPrices&&typeof d.yearPrices==='object') userPrices=d.yearPrices;
+    if(d.savedAt){
+      const dt=new Date(d.savedAt);
+      set('saveLabel',dt.toLocaleDateString('it-IT')+' '+dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0'));
+    }
+  } catch(e){ console.warn('load error:',e); }
+}
+function doSave(){ saveAll(); toast('Salvato ✓','ok'); }
+
+// ═══ EXPORT ═══
+function doExportJSON() {
+  const blob=new Blob([JSON.stringify({prices:{btc:btcNow()},rows,corrections,sales,yearPrices:userPrices,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='btc_tracker_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href); toast('JSON scaricato ✓','ok');
+}
+function doExportCSV() {
+  const lines=['Data,Investito EUR,BTC,EUR per BTC'];
+  rows.forEach(r=>lines.push(r.date+','+r.eur.toFixed(2)+','+r.btc.toFixed(8)+','+r.rate.toFixed(2)));
+  if(corrections.length){ lines.push('','--- CORREZIONI ---','Data,Delta BTC,Motivo'); corrections.forEach(c=>lines.push(c.date+','+c.delta.toFixed(8)+',"'+c.reason+'"')); }
+  if(sales.length){ lines.push('','--- VENDITE ---','Data,BTC venduti,Prezzo,Ricavo,Gain,Imposta'); sales.forEach(s=>lines.push(s.date+','+s.btcSold.toFixed(8)+','+s.price.toFixed(2)+','+s.revenue.toFixed(2)+','+s.gain.toFixed(2)+','+s.tax.toFixed(2))); }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv'}));
+  a.download='btc_tracker_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(a.href); toast('CSV scaricato ✓','ok');
+}
+
+// ═══ IMPORT ═══
+function openImport() {
+  _importRaw=''; el('importTA').value=''; el('fileInput').value='';
+  el('dropName').style.display='none'; el('dropZone').className='drop-zone';
+  el('importOverlay').classList.add('open');
+}
+function closeImport(){ el('importOverlay').classList.remove('open'); _importRaw=''; }
+function handleFileSelect(inp){ if(inp.files[0]) readFile(inp.files[0]); }
+function handleDrop(ev){
+  ev.preventDefault(); el('dropZone').classList.remove('drag');
+  const f=ev.dataTransfer.files[0]; if(!f) return;
+  if(!f.name.endsWith('.json')&&f.type!=='application/json'){ toast('Seleziona un file .json','err'); return; }
+  readFile(f);
+}
+function readFile(file){
+  const r=new FileReader();
+  r.onload=e=>{
+    _importRaw=e.target.result;
+    el('dropName').textContent='✓ '+file.name; el('dropName').style.display='block';
+    el('dropZone').className='drop-zone ok';
+  };
+  r.onerror=()=>toast('Errore lettura file','err');
+  r.readAsText(file);
+}
+function doImport(){
+  const raw=_importRaw||el('importTA').value.trim();
+  if(!raw){ toast('Seleziona un file JSON','err'); return; }
+  let d;
+  try { d=JSON.parse(raw); } catch(e){ toast('File non valido: JSON malformato','err'); return; }
+
+  // Supporto formati v4, v5, e qualsiasi struttura con "rows"
+  // Alcuni file vecchi potrebbero avere struttura diversa
+  let newRows=[], newCorr=[], newSales=[], newPrice=84000;
+
+  try {
+    // Prezzo
+    if(d.prices?.btc && d.prices.btc>0) newPrice=d.prices.btc;
+    else if(typeof d.price==='number' && d.price>0) newPrice=d.price;
+
+    // Rows — campi obbligatori: date, btc, eur. rate viene calcolato se manca
+    const rawRows = Array.isArray(d.rows) ? d.rows : [];
+    if(rawRows.length===0 && !Array.isArray(d.rows)){
+      toast('JSON non riconosciuto: manca il campo "rows"','err'); return;
+    }
+    newRows = rawRows.map((r,i)=>({
+      id:    r.id || uid(),
+      date:  r.date || '2020-01-01',
+      eur:   Number(r.eur)||0,
+      btc:   Number(r.btc)||0,
+      rate:  Number(r.rate)||(r.eur&&r.btc ? r.eur/r.btc : 0)
+    })).filter(r=>r.btc>0 && r.eur>0);
+
+    // Corrections
+    newCorr = Array.isArray(d.corrections)
+      ? d.corrections.map(c=>({
+          id:     c.id||uid(),
+          date:   c.date||'2020-01-01',
+          delta:  Number(c.delta)||0,
+          reason: c.reason||'Correzione'
+        })).filter(c=>c.delta!==0)
+      : [];
+
+    // Sales con normalizzazione completa
+    newSales = normalizeSales(Array.isArray(d.sales)?d.sales:[]);
+    if(d.yearPrices&&typeof d.yearPrices==='object') userPrices=d.yearPrices; else userPrices={};
+
+  } catch(e){
+    toast('Errore nel leggere il file: '+e.message,'err');
+    console.error('Import error:', e, d);
+    return;
+  }
+
+  // Applica
+  rows=[];corrections=[];sales=[];
+  el('btcPrice').value=newPrice;
+  rows=newRows; corrections=newCorr; sales=newSales;
+
+  // Reset simulatore
+  el('sim_btc').value=''; el('sim_price').value='';
+  _lastSim=null;
+  const ov=el('simOverview'); if(ov) ov.style.display='none';
+  const lb=el('simLotsBox'); if(lb) lb.style.display='none';
+  const ab=el('simApplyBtn'); if(ab) ab.style.display='none';
+
+  render(); saveAll(); closeImport();
+  toast(rows.length+' acquisti'
+    +(corrections.length?' · '+corrections.length+' correzioni':'')
+    +(sales.length?' · '+sales.length+' vendite':'')
+    +' importati ✓','ok');
+}
+el('importOverlay').addEventListener('click',e=>{ if(e.target===el('importOverlay'))closeImport(); });
+
+// ═══ TOAST ═══
+let _tt=null;
+function toast(msg,type){
+  const t=el('toast'); t.textContent=msg; t.className='toast show '+(type||'info');
+  if(_tt)clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ═══ INIT ═══
+el('btcPrice').addEventListener('input',  ()=>render());
+el('btcPrice').addEventListener('change', saveAll);
+document.addEventListener('DOMContentLoaded',()=>{
+  el('f_date').valueAsDate=new Date();
+  el('c_date').valueAsDate=new Date();
+  loadAll();
+  render();
+  fetchPrice();
+});
+window.addEventListener('beforeunload', saveAll);
+</script>
+</body>
+</html>
