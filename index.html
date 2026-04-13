@@ -2458,9 +2458,32 @@ function normalizeSales(arr) {
 
 function saveAll() {
   localStorage.setItem(LS, JSON.stringify({prices:{btc:btcNow()},rows,corrections,sales,yearPrices:userPrices,savedAt:new Date().toISOString()}));
-  const d=new Date();
-  set('saveLabel',d.toLocaleDateString('it-IT')+' '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'));
+  updateSaveLabel();
 }
+function updateSaveLabel() {
+  const raw=localStorage.getItem(LS)||localStorage.getItem('btctracker_v4');
+  if(!raw){ set('saveLabel','non salvato'); return; }
+  try {
+    const d=JSON.parse(raw);
+    if(d.savedAt){
+      const dt=new Date(d.savedAt);
+      const now=new Date();
+      const diffMin=Math.round((now-dt)/60000);
+      let label;
+      if(diffMin<1)       label='salvato ora';
+      else if(diffMin<60) label='salvato '+diffMin+' min fa';
+      else {
+        const dayStr=dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+        const timeStr=dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');
+        const isToday=dt.toDateString()===now.toDateString();
+        label=(isToday?'oggi ':dayStr+' ')+timeStr;
+      }
+      set('saveLabel',label);
+    }
+  } catch(e){}
+}
+// Aggiorna il label ogni 30 secondi
+setInterval(updateSaveLabel, 30000);
 function loadAll() {
   const raw=localStorage.getItem(LS)||localStorage.getItem('btctracker_v4');
   if(!raw) return;
@@ -2479,10 +2502,7 @@ function loadAll() {
       : [];
     sales=normalizeSales(Array.isArray(d.sales)?d.sales:[]);
     if(d.yearPrices&&typeof d.yearPrices==='object') userPrices=d.yearPrices;
-    if(d.savedAt){
-      const dt=new Date(d.savedAt);
-      set('saveLabel',dt.toLocaleDateString('it-IT')+' '+dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0'));
-    }
+    updateSaveLabel();
   } catch(e){ console.warn('load error:',e); }
 }
 function doSave(){ saveAll(); toast('Salvato ✓','ok'); }
