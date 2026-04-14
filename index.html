@@ -75,7 +75,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--btc),transparent 55%)}
 .hero::after{content:'₿';position:absolute;right:1.25rem;top:50%;transform:translateY(-50%);font-size:6.5rem;color:rgba(240,146,28,.03);font-family:var(--mono);font-weight:800;pointer-events:none;line-height:1}
 .hero-label{font-family:var(--sans);font-size:.68rem;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:.55rem}
-.hero-num{font-family:var(--mono);font-size:clamp(2rem,3.8vw,3.4rem);font-weight:700;letter-spacing:-.05em;line-height:1;color:var(--text);transition:color .3s}
+.hero-num{font-family:var(--mono);font-size:clamp(1.6rem,3.4vw,3.4rem);font-weight:700;letter-spacing:-.05em;line-height:1;color:var(--text);transition:color .3s;word-break:break-word}
 .hero-num.pos{color:var(--green)}.hero-num.neg{color:var(--red)}
 .hero-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.65rem}
 .chip{font-family:var(--mono);font-size:.7rem;font-weight:500;padding:.2rem .72rem;border-radius:99px;display:inline-flex;align-items:center;gap:.3rem}
@@ -83,27 +83,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .chip.pos{background:var(--green-bg);border:1px solid var(--green-brd);color:var(--green)}
 .chip.neg{background:var(--red-bg);border:1px solid var(--red-brd);color:var(--red)}
 .hero-strip{display:flex;gap:0;align-items:stretch;border-top:1px solid var(--line);margin-top:1.2rem;padding-top:1.05rem;flex-wrap:wrap}
-.hstat{flex:1;min-width:7rem;padding:0 1.1rem;border-right:1px solid var(--line)}
+.hstat{flex:1 1 auto;min-width:0;padding:0 1.1rem;border-right:1px solid var(--line)}
 .hstat:first-child{padding-left:0}.hstat:last-child{border-right:none}
-.hstat-lbl{font-family:var(--sans);font-size:.7rem;color:var(--text3);margin-bottom:.22rem;white-space:nowrap}
-.hstat-val{font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--text);letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hstat-lbl{font-family:var(--sans);font-size:.68rem;color:var(--text3);margin-bottom:.22rem;white-space:normal;line-height:1.3}
+.hstat-val{font-family:var(--mono);font-size:clamp(.78rem,.95vw,1rem);font-weight:600;color:var(--text);letter-spacing:-.02em;white-space:nowrap;min-width:0}
 .hstat-val.btc{color:var(--btc)}.hstat-val.muted{color:var(--text2);font-weight:400;font-size:.92rem}
-.hstat-sub{font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:.15rem;white-space:nowrap}
+.hstat-sub{font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:.15rem;white-space:normal;line-height:1.3;word-break:break-word}
 .hstat.clickable{cursor:pointer;transition:background .12s;border-radius:var(--r-sm);padding:.2rem 1.1rem}
 .hstat.clickable:hover .hstat-val{color:var(--btc)}
 
 /* ── CALC FLOW ── */
-.calc-flow{display:flex;align-items:stretch;background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:.85rem;overflow-x:auto}
-.cf-step{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:1rem 1.1rem;border-right:1px solid var(--line);transition:background .2s}
+.calc-flow{display:flex;align-items:stretch;background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:.85rem;flex-wrap:wrap}
+.cf-step{flex:1;min-width:6rem;display:flex;flex-direction:column;justify-content:center;padding:1rem 1.1rem;border-right:1px solid var(--line);transition:background .2s}
 .cf-step:last-child{border-right:none}
 .cf-step:hover{background:var(--bg2)}
 .cf-step.cf-main{background:rgba(240,146,28,.04)}
 .cf-step.cf-result{background:linear-gradient(160deg,rgba(74,222,128,.06),var(--bg1) 70%);border-left:2px solid var(--green)}
 .cf-step.cf-result.neg{background:linear-gradient(160deg,rgba(248,113,113,.06),var(--bg1) 70%);border-left-color:var(--red)}
-.cf-label{font-family:var(--sans);font-size:.62rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:.32rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cf-val{font-family:var(--mono);font-size:clamp(.9rem,1.3vw,1.2rem);font-weight:700;color:var(--text);letter-spacing:-.03em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-label{font-family:var(--sans);font-size:.62rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:.32rem;white-space:normal;line-height:1.3}
+.cf-val{font-family:var(--mono);font-size:clamp(.82rem,1.1vw,1.1rem);font-weight:700;color:var(--text);letter-spacing:-.03em;line-height:1.2;white-space:nowrap;min-width:0}
 .cf-val.btc{color:var(--btc)}.cf-val.green{color:var(--green)}.cf-val.red{color:var(--red)}.cf-val.amber{color:var(--amber)}.cf-val.dim{color:var(--text3)}
-.cf-sub{font-family:var(--mono);font-size:.62rem;color:var(--text3);margin-top:.28rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-sub{font-family:var(--mono);font-size:.62rem;color:var(--text3);margin-top:.28rem;white-space:normal;line-height:1.35;word-break:break-word}
 .cf-arrow{display:flex;align-items:center;justify-content:center;padding:0 .45rem;font-size:.95rem;color:var(--text4);flex-shrink:0;font-family:var(--mono);background:var(--bg1);border-right:1px solid var(--line)}
 
 /* ── SIDE PANEL ── */
@@ -114,8 +114,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .side-row:last-child{border-bottom:none}
 .side-row.clickable{cursor:pointer;transition:background .12s;border-radius:var(--r-sm);padding:.44rem .3rem;margin:0 -.3rem}
 .side-row.clickable:hover .side-val{color:var(--btc)}
-.side-lbl{font-family:var(--sans);font-size:.8rem;color:var(--text2);flex-shrink:0;white-space:nowrap}
-.side-val{font-family:var(--mono);font-size:.84rem;font-weight:600;color:var(--text);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.side-lbl{font-family:var(--sans);font-size:.78rem;color:var(--text2);flex-shrink:0;white-space:normal;line-height:1.35;max-width:55%}
+.side-val{font-family:var(--mono);font-size:clamp(.75rem,.85rem,.92rem);font-weight:600;color:var(--text);text-align:right;min-width:0;word-break:break-word}
 .side-val.green{color:var(--green)}.side-val.red{color:var(--red)}.side-val.btc{color:var(--btc)}.side-val.amber{color:var(--amber)}.side-val.dim{color:var(--text3);font-weight:400}
 .side-val.lg{font-size:1rem;letter-spacing:-.03em}
 .side-row-accent{padding-top:.65rem!important;border-top:1px solid var(--line2)!important;border-bottom:none!important}
@@ -501,7 +501,13 @@ table.holding-t tfoot td:first-child{text-align:left;font-family:var(--sans);fon
     <button class="tab"        id="tab-730"  onclick="switchTab('730')">Fiscalità</button>
   </nav>
   <div class="topbar-right">
-    <div class="save-info"><div class="save-dot"></div><span id="saveLabel">non salvato</span></div>
+    <div class="save-info">
+      <div class="save-dot"></div>
+      <div style="display:flex;flex-direction:column;gap:.05rem;line-height:1.2">
+        <span id="clockLabel" style="font-size:.72rem;font-weight:600;color:var(--text2);letter-spacing:.02em">—</span>
+        <span id="saveLabel" style="font-size:.6rem;color:var(--text3)">non salvato</span>
+      </div>
+    </div>
     <button class="tbtn" onclick="openImport()">⬆ Importa</button>
     <button class="tbtn" onclick="doExportCSV()">⬇ CSV</button>
     <button class="tbtn primary" onclick="doExportJSON()" title="Scarica il file JSON con tutti i tuoi dati">⬇ Salva JSON</button>
@@ -793,7 +799,7 @@ table.holding-t tfoot td:first-child{text-align:left;font-family:var(--sans);fon
           <button class="corr-card-add" onclick="switchTab('dash')" title="Aggiungi una correzione dalla Dashboard">+ Aggiungi ↗</button>
           <button class="corr-card-del" onclick="confirmDelAll('correzioni')" title="Elimina tutte le correzioni">🗑</button>
         </div>
-        <div style="overflow-x:auto"><div id="corrWrap2"></div></div>
+        <div style=""><div id="corrWrap2"></div></div>
         <div class="corr-empty" id="emptyCorr">Nessuna correzione registrata.</div>
       </div>
 
@@ -1545,7 +1551,11 @@ function renderStorico() {
   emptyEl.style.display='none'; foot.style.display='flex';
 
   const byYear={};
-  rows.forEach((r,i)=>{ const y=r.date.slice(0,4); if(!byYear[y])byYear[y]=[]; byYear[y].push({...r,_i:i}); });
+  // Numerazione globale da 1
+  rows.forEach((r,i)=>{ const y=r.date.slice(0,4); if(!byYear[y])byYear[y]=[]; byYear[y].push({...r,_i:i+1}); });
+  // Correzioni raggruppate per anno
+  const corrByYear={};
+  corrections.forEach(c=>{ const y=c.date.slice(0,4); if(!corrByYear[y])corrByYear[y]=[]; corrByYear[y].push(c); });
   const years=Object.keys(byYear).sort((a,b)=>+a-+b);
 
   wrap.innerHTML=years.map((yr,yi)=>{
@@ -1554,6 +1564,26 @@ function renderStorico() {
     const yB=grp.reduce((s,r)=>s+r.btc,0);
     const yD=yB*btc-yE;
     const isOpen=yi===years.length-1;
+
+    // Righe correzione dell'anno — mostrate come #0 prima degli acquisti
+    const yrCorrs = corrByYear[yr]||[];
+    const corrRows = yrCorrs.map(corr=>{
+      const cd = corr.date.split('-').reverse().join('/');
+      const isNeg = corr.delta<0;
+      return '<tr style="background:rgba(251,191,36,.04);border-bottom:1px solid var(--amber-brd)">'
+        +'<td class="t-n" style="text-align:left;padding-left:2.4rem;color:var(--amber)">⚙</td>'
+        +'<td class="t-date" style="color:var(--amber);vertical-align:top">'+cd
+          +'<div style="font-family:var(--sans);font-size:.65rem;color:var(--text3);margin-top:.15rem">'+corr.reason+'</div>'
+          +'</td>'
+        +'<td style="color:var(--text3);text-align:right;font-size:.78rem;font-style:italic">—</td>'
+        +'<td style="text-align:right;font-family:var(--mono);font-weight:700;color:'+(isNeg?'var(--red)':'var(--green)')+'">'
+          +(isNeg?'':'+'+'')+fBtc(corr.delta)
+          +'<div style="font-family:var(--sans);font-size:.6rem;color:var(--text3);font-weight:400">sottrazione FIFO lotto più vecchio</div>'
+          +'</td>'
+        +'<td colspan="2" style="color:var(--text3);font-family:var(--sans);font-size:.72rem">commissione / fee</td>'
+        +'<td><button class="delbtn" onclick="delCorrection(this.dataset.id)" data-id="'+corr.id+'">✕</button></td>'
+        +'</tr>';
+    }).join('');
 
     const rowsHtml=grp.map(r=>{
       const diff=btc-r.rate, pct=r.rate>0?(diff/r.rate)*100:0;
@@ -1596,7 +1626,7 @@ function renderStorico() {
         +'<span class="yr-arrow">▶</span>'
         +'<span class="yr-label">'+yr+'</span>'
         +'<span class="yr-meta">'
-          +'<span>'+grp.length+(grp.length===1?' acquisto':' acquisti')+'</span>'
+          +'<span>'+grp.length+(grp.length===1?' acquisto':' acquisti')+(yrCorrs.length?' · '+yrCorrs.length+' corr.':'')+'</span>'
           +'<span>'+fEur(yE)+'</span>'
           +'<span class="'+(yD>=0?'pos':'neg')+'">'+(yD>=0?'+':'')+fEur(yD,0)+'</span>'
         +'</span>'
@@ -1612,7 +1642,7 @@ function renderStorico() {
             +'<th>Δ prezzo</th>'
             +'<th></th>'
           +'</tr></thead>'
-          +'<tbody>'+rowsHtml+'</tbody>'
+          +'<tbody>'+corrRows+rowsHtml+'</tbody>'
         +'</table>'
       +'</div>'
     +'</details>';
@@ -1680,26 +1710,35 @@ function renderStoricoCorrections() {
   }
   if(empty) empty.style.display='none';
   if(cnt){ cnt.textContent=corrections.length; cnt.style.display=''; }
+
   const tot=corrections.reduce((s,c)=>s+c.delta,0);
-  const rh=corrections.map(c=>{
+  const totCol=tot<0?'var(--red)':'var(--green)';
+
+  const header='<div style="display:flex;align-items:center;gap:.5rem;padding:.4rem .9rem;background:var(--bg2);border-bottom:1px solid var(--amber-brd)">'
+    +'<span style="font-family:var(--sans);font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);min-width:4.8rem">Data</span>'
+    +'<span style="font-family:var(--sans);font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);flex:1">Motivo</span>'
+    +'<span style="font-family:var(--sans);font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);white-space:nowrap">Δ BTC</span>'
+    +'<span style="min-width:2rem"></span>'
+    +'</div>';
+
+  const items=corrections.map(c=>{
     const d=c.date.split('-').reverse().join('/');
-    const cls=c.delta>=0?'cd-pos':'cd-neg';
-    const sign=c.delta<0?'':'+'
-    return '<tr>'
-      +'<td class="c2-date">'+d+'</td>'
-      +'<td class="c2-reason" title="'+c.reason+'">'+c.reason+'</td>'
-      +'<td class="c2-delta '+cls+'">'+(c.delta<0?'':'+'+'')+fBtc(c.delta)+'</td>'
-      +'<td class="c2-del"><button class="delbtn" onclick="delCorrection(this.dataset.id)" data-id="'+c.id+'">✕</button></td>'
-      +'</tr>';
+    const col=c.delta<0?'var(--red)':'var(--green)';
+    const sign=c.delta<0?'':'+';
+    return '<div style="display:flex;align-items:flex-start;gap:.5rem;padding:.55rem .9rem;border-bottom:1px solid var(--line)">'
+      +'<span style="font-family:var(--mono);font-size:.72rem;color:var(--text3);flex-shrink:0;min-width:4.8rem;padding-top:.05rem">'+d+'</span>'
+      +'<span style="font-family:var(--sans);font-size:.76rem;color:var(--text2);flex:1;min-width:0;overflow-wrap:break-word;word-break:break-word;line-height:1.4">'+c.reason+'</span>'
+      +'<span style="font-family:var(--mono);font-weight:700;font-size:.78rem;color:'+col+';white-space:nowrap;text-align:right;flex-shrink:0">'+sign+fBtc(c.delta)+'</span>'
+      +'<button class="delbtn" onclick="delCorrection(this.dataset.id)" data-id="'+c.id+'" style="flex-shrink:0;margin-left:.15rem">✕</button>'
+      +'</div>';
   }).join('');
-  const totCls=tot>=0?'cd-pos':'cd-neg';
-  wrap.innerHTML='<table class="corr-t2">'
-    +'<thead><tr><th>Data</th><th>Motivo</th><th style="text-align:right">Δ BTC</th><th></th></tr></thead>'
-    +'<tbody>'+rh+'</tbody>'
-    +'<tfoot><tr>'
-    +'<td colspan="2" class="c2-tot-lbl">Totale netto</td>'
-    +'<td class="c2-delta '+totCls+'" style="text-align:right">'+(tot<0?'':'+'+'')+fBtc(tot)+'</td>'
-    +'<td></td></tr></tfoot></table>';
+
+  const footer='<div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem .9rem;background:var(--amber-bg);border-top:2px solid var(--amber-brd)">'
+    +'<span style="font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)">Totale netto</span>'
+    +'<span style="font-family:var(--mono);font-weight:700;font-size:.82rem;color:'+totCol+'">'+(tot<0?'':'+'+'')+fBtc(tot)+'</span>'
+    +'</div>';
+
+  wrap.innerHTML=header+items+footer;
 }
 
 // ═══ SIMULATORE 730 ═══
@@ -1962,8 +2001,26 @@ function calcSim() {
   if(lb) lb.style.display='';
   set('simLotsTitle',used.length+' lott'+(used.length===1?'o':'i')+' coinvolt'+(used.length===1?'o':'i'));
 
-  // Calcola disponibilità per display (solo vendite, senza correzioni)
+  // Disponibilità display (solo vendite) e fee per lotto
   const availDisplay = getLotSalesOnlyAvailability();
+  // Calcola quanta fee è stata assorbita da ogni lotto (per mostrarlo nel FIFO)
+  const feeByLot = {};
+  const negCorrsF = corrections.filter(c=>c.delta<0).sort((a,b)=>a.date.localeCompare(b.date));
+  const lotOrderF = [...rows].sort((x,y)=>x.date.localeCompare(y.date));
+  // Simula prima le vendite, poi le correzioni sulle rimanenze
+  const tmpAvail = {};
+  rows.forEach(r=>{ tmpAvail[r.id]=r.btc; });
+  sales.forEach(s=>s.lots.forEach(l=>{ if(tmpAvail[l.rowId]!==undefined) tmpAvail[l.rowId]=Math.max(0,tmpAvail[l.rowId]-l.btcUsed); }));
+  negCorrsF.forEach(corr=>{
+    let rem=Math.abs(corr.delta);
+    for(const lot of lotOrderF){
+      if(rem<=1e-12) break;
+      const av=tmpAvail[lot.id]||0; if(av<=1e-12) continue;
+      const use=Math.min(av,rem);
+      feeByLot[lot.id]=(feeByLot[lot.id]||0)+use;
+      tmpAvail[lot.id]=av-use; rem-=use;
+    }
+  });
 
   const rh=used.map(l=>{
     const lg=l.btcUsed*simPrice-l.cost;
@@ -1974,8 +2031,12 @@ function calcSim() {
     // Badge intero/parziale basato su disponibilità interna (include correzioni)
     // "di X disp." mostra la disponibilità display (solo vendite)
     const prevNote=prevSales>1e-9?'<span style="font-size:.62rem;color:var(--text3);margin-left:.35rem">(già venduti '+fBtc(prevSales)+')</span>':'';
+    const feeThisLot = feeByLot[l.rowId]||0;
+    const feeNote = feeThisLot>1e-9
+      ? '<div style="font-family:var(--sans);font-size:.6rem;color:var(--amber);margin-top:.18rem">⚙ −'+fBtc(feeThisLot)+' fee assorbita (FIFO)</div>'
+      : '';
     return '<tr class="'+(l.partial?'fifo-partial':'fifo-full')+'">'
-      +'<td style="padding-left:1.2rem">'+d+prevNote
+      +'<td style="padding-left:1.2rem">'+d+prevNote+feeNote
         +'<span class="fifo-badge '+(l.partial?'partial':'full')+'">'+(l.partial?'parziale':'intero')+'</span></td>'
       +'<td>'+fBtc(l.btcUsed)+(l.partial?'<span style="color:var(--text3);font-size:.7rem"> di '+fBtc(btcAvailDisplay)+'</span>':'')+'</td>'
       +'<td style="color:var(--text3)">'+fEur(l.rate,0)+'</td>'
@@ -2461,29 +2522,40 @@ function saveAll() {
   updateSaveLabel();
 }
 function updateSaveLabel() {
+  // ── Orologio live ──
+  const now = new Date();
+  const clockEl = el('clockLabel');
+  if(clockEl){
+    const days=['dom','lun','mar','mer','gio','ven','sab'];
+    const dd=now.getDate().toString().padStart(2,'0');
+    const mm=(now.getMonth()+1).toString().padStart(2,'0');
+    const hh=now.getHours().toString().padStart(2,'0');
+    const min=now.getMinutes().toString().padStart(2,'0');
+    clockEl.textContent=days[now.getDay()]+' '+dd+'/'+mm+' '+hh+':'+min;
+  }
+  // ── Stato salvataggio ──
   const raw=localStorage.getItem(LS)||localStorage.getItem('btctracker_v4');
-  if(!raw){ set('saveLabel','non salvato'); return; }
+  if(!raw){ set('saveLabel','mai salvato'); return; }
   try {
     const d=JSON.parse(raw);
     if(d.savedAt){
       const dt=new Date(d.savedAt);
-      const now=new Date();
       const diffMin=Math.round((now-dt)/60000);
       let label;
-      if(diffMin<1)       label='salvato ora';
-      else if(diffMin<60) label='salvato '+diffMin+' min fa';
-      else {
-        const dayStr=dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
-        const timeStr=dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');
-        const isToday=dt.toDateString()===now.toDateString();
-        label=(isToday?'oggi ':dayStr+' ')+timeStr;
+      if(diffMin<1)        label='✓ salvato ora';
+      else if(diffMin<60)  label='salvato '+diffMin+' min fa';
+      else if(diffMin<1440){
+        const hStr=dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');
+        label='salvato '+(dt.toDateString()===now.toDateString()?'oggi':'ieri')+' '+hStr;
+      } else {
+        label='salvato il '+dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
       }
       set('saveLabel',label);
     }
   } catch(e){}
 }
-// Aggiorna il label ogni 30 secondi
-setInterval(updateSaveLabel, 30000);
+// Orologio ogni secondo
+setInterval(updateSaveLabel, 1000);
 function loadAll() {
   const raw=localStorage.getItem(LS)||localStorage.getItem('btctracker_v4');
   if(!raw) return;
