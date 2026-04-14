@@ -1308,6 +1308,58 @@ function goToStorico(which) {
 
 // ═══ FORM ACQUISTO ═══
 ['f_eur','f_btc'].forEach(id => el(id).addEventListener('input', autoCalc));
+
+// Auto-fetch prezzo storico quando si seleziona una data passata
+let _histFetchTimer = null;
+el('f_date').addEventListener('change', function() {
+  const dateVal = this.value;
+  if(!dateVal) return;
+  const today = new Date().toISOString().slice(0,10);
+  if(dateVal >= today) return; // data odierna o futura → usa prezzo live
+  // Già ha BTC e EUR compilati → non sovrascrivere
+  if(el('f_btc').value) return;
+
+  clearTimeout(_histFetchTimer);
+  set('fhint','⏳ recupero prezzo storico…');
+  _histFetchTimer = setTimeout(async ()=>{
+    try {
+      const [y,m,d] = dateVal.split('-');
+      const dd = d+'-'+m+'-'+y; // formato CoinGecko: dd-mm-yyyy
+      const url = 'https://api.coingecko.com/api/v3/coins/bitcoin/history?date='+dd+'&localization=false';
+      const r = await fetch(url, {signal:AbortSignal.timeout(8000)});
+      if(!r.ok) throw 0;
+      const data = await r.json();
+      const price = data?.market_data?.current_price?.eur;
+      if(!price) throw 0;
+      // Imposta il prezzo nel campo EUR solo se BTC è già compilato
+      // Altrimenti mostra solo il suggerimento
+      const btcVal = parseFloat(el('f_btc').value);
+      if(btcVal > 0) {
+        el('f_eur').value = (btcVal * price).toFixed(2);
+        autoCalc();
+        set('fhint','✓ prezzo storico '+dateVal+': '+new Intl.NumberFormat('it-IT',{maximumFractionDigits:0}).format(price)+' €/BTC (compilato automaticamente)');
+      } else {
+        // Salva il prezzo in un attributo per usarlo quando inseriscono i BTC
+        el('f_date').dataset.histPrice = price;
+        set('fhint','✓ prezzo storico '+dateVal+': '+new Intl.NumberFormat('it-IT',{maximumFractionDigits:0}).format(price)+' €/BTC — inserisci i BTC ricevuti');
+      }
+    } catch(e) {
+      set('fhint','inserisci importo e BTC → il tasso €/BTC si calcola automaticamente');
+      el('f_date').dataset.histPrice = '';
+    }
+  }, 400);
+});
+
+// Quando si inseriscono i BTC, se c'è un prezzo storico memorizzato, compila EUR automaticamente
+el('f_btc').addEventListener('input', function() {
+  const histPrice = parseFloat(el('f_date').dataset.histPrice);
+  const btcVal    = parseFloat(this.value);
+  if(histPrice > 0 && btcVal > 0 && !el('f_eur').value) {
+    el('f_eur').value = (btcVal * histPrice).toFixed(2);
+  }
+  autoCalc();
+});
+
 function autoCalc() {
   const ve=parseFloat(el('f_eur').value), vb=parseFloat(el('f_btc').value);
   const prev=el('ratePreview');
@@ -1791,73 +1843,191 @@ function updateSimPortfolio() {
   el('sp_net').className='side-val lg '+(net>=totEur?'green':'red');
 }
 
+function computeLossCarry() {
+  // Raccoglie le perdite originali per anno
+  const rawLoss = {};
+  sales.forEach(s => {
+    if(s.gain < 0) {
+      const yr = s.date.slice(0,4);
+      rawLoss[yr] = (rawLoss[yr]||0) + Math.abs(s.gain);
+    }
+  });
+
+  // Raccoglie i guadagni netti per anno (già al netto delle perdite dello stesso anno)
+  const netGainByYear = {};
+  const allYears = [...new Set(sales.map(s=>s.date.slice(0,4)))].sort();
+  allYears.forEach(yr => {
+    const g = sales.filter(s=>s.date.slice(0,4)===yr&&s.gain>0).reduce((s,sl)=>s+sl.gain,0);
+    const l = sales.filter(s=>s.date.slice(0,4)===yr&&s.gain<0).reduce((s,sl)=>s+Math.abs(sl.gain),0);
+    netGainByYear[yr] = Math.max(0, g - l);
+  });
+
+  // Simula il consumo dei crediti anno per anno
+  const credits = Object.assign({}, rawLoss); // parte dai valori originali
+  allYears.forEach(yr => {
+    let gain = netGainByYear[yr] || 0;
+    if(gain <= 0) return;
+    Object.keys(credits).sort().forEach(lossYr => {
+      if(gain <= 0) return;
+      if(lossYr >= yr) return;
+      if(parseInt(yr) - parseInt(lossYr) > 4) { credits[lossYr] = 0; return; }
+      const use = Math.min(credits[lossYr]||0, gain);
+      credits[lossYr] -= use;
+      gain -= use;
+    });
+  });
+
+  return { rawLoss, credits }; // credits = residui dopo TUTTI gli anni
+}
+
+function getCreditsBeforeYear(targetYr) {
+  // Restituisce i crediti disponibili all'INIZIO dell'anno targetYr
+  // (prima che targetYr li consumi) — usato per RT24 nel popup
+  const { rawLoss } = computeLossCarry();
+  const credits = Object.assign({}, rawLoss);
+  const allYears = [...new Set(sales.map(s=>s.date.slice(0,4)))].sort();
+  allYears.forEach(yr => {
+    if(yr >= targetYr) return; // ferma prima di targetYr
+    let gain = (() => {
+      const g=sales.filter(s=>s.date.slice(0,4)===yr&&s.gain>0).reduce((s,sl)=>s+sl.gain,0);
+      const l=sales.filter(s=>s.date.slice(0,4)===yr&&s.gain<0).reduce((s,sl)=>s+Math.abs(sl.gain),0);
+      return Math.max(0,g-l);
+    })();
+    if(gain <= 0) return;
+    Object.keys(credits).sort().forEach(lossYr => {
+      if(gain<=0||lossYr>=yr||parseInt(yr)-parseInt(lossYr)>4) return;
+      const use=Math.min(credits[lossYr]||0,gain);
+      credits[lossYr]-=use; gain-=use;
+    });
+  });
+  return credits;
+}
+
 function renderFiscalYear() {
   const fyCard = el('fyCard'), iCard = el('ivafeCurCard');
   if(!sales.length){ if(fyCard)fyCard.style.display='none'; if(iCard)iCard.style.display='none'; return; }
   if(fyCard) fyCard.style.display='';
   if(iCard)  iCard.style.display='';
 
-  // IVAFE corrente
+  // IVAFE corrente — stima anno in corso
   const btcEff = getBtcEff();
   const valNow  = btcEff * btcNow();
-  const ivafe   = valNow * 0.002;
+  const curYear = String(new Date().getFullYear());
+  // Stima prorata: giorni trascorsi dall'inizio anno
+  const now = new Date();
+  const startYear = new Date(curYear+'-01-01');
+  const daysYear = (new Date(curYear+'-12-31') - startYear)/86400000 + 1;
+  const daysElapsed = Math.max(1, Math.round((now - startYear)/86400000) + 1);
+  const ivafeProrata = valNow * 0.002 * (daysElapsed / daysYear);
   el('ivafe_val').textContent = fEur(valNow); el('ivafe_val').className='side-val btc';
-  el('ivafe_est').textContent = fEur(ivafe);  el('ivafe_est').className='side-val lg amber';
+  el('ivafe_est').textContent = fEur(ivafeProrata)+' (stima al '+now.getDate()+'/'+String(now.getMonth()+1).padStart(2,'0')+')';
+  el('ivafe_est').className='side-val lg amber';
 
   // Raggruppa vendite per anno
   const byYear = {};
   sales.forEach(s=>{
     const yr = s.date.slice(0,4);
-    if(!byYear[yr]) byYear[yr]={gain:0,tax:0,loss:0,revenue:0};
+    if(!byYear[yr]) byYear[yr]={gain:0,tax:0,loss:0,revenue:0,netTax:0};
     byYear[yr].revenue += s.revenue;
     if(s.gain>=0){ byYear[yr].gain+=s.gain; byYear[yr].tax+=s.tax; }
     else { byYear[yr].loss+=Math.abs(s.gain); }
   });
 
+  // Calcola l'imposta NETTA per anno applicando:
+  // 1. Compensazione intra-anno (plus - minus stesso anno)
+  // 2. Riporto minusvalenze anni precedenti (RT24)
+  const { rawLoss } = computeLossCarry();
+  // Copia i valori ORIGINALI delle perdite — li consumeremo anno per anno
+  const creditsLeft = Object.assign({}, rawLoss);
+
+  Object.keys(byYear).sort().forEach(yr=>{
+    const d = byYear[yr];
+    // Step 1: netting intra-anno
+    let imponibile = Math.max(0, d.gain - d.loss);
+    // Step 2: applica crediti anni precedenti (dal più vecchio)
+    let usedFromPrev = 0;
+    Object.keys(creditsLeft).sort().forEach(lossYr=>{
+      if(imponibile <= 0) return;
+      if(lossYr >= yr) return;
+      if(parseInt(yr) - parseInt(lossYr) > 4) { creditsLeft[lossYr]=0; return; }
+      const use = Math.min(creditsLeft[lossYr]||0, imponibile);
+      creditsLeft[lossYr] -= use;
+      imponibile -= use;
+      usedFromPrev += use;
+    });
+    d.netTax = imponibile * 0.26;
+    d.usedFromPrev = usedFromPrev; // per mostrarlo in tabella
+  });
+
+  const { rawLoss: rawLossAlerts, credits: finalCredits } = computeLossCarry();
   const years = Object.keys(byYear).sort();
   const totGain = years.reduce((s,y)=>s+byYear[y].gain,0);
-  const totTax  = years.reduce((s,y)=>s+byYear[y].tax,0);
+  const totNetTax = years.reduce((s,y)=>s+byYear[y].netTax,0);
   const totLoss = years.reduce((s,y)=>s+byYear[y].loss,0);
 
   const rows_html = years.map(yr=>{
     const d = byYear[yr];
-    const netGain = d.gain - d.loss;
-    const hasLoss = d.loss > 0;
+    const samYrComp = d.gain>0 && d.loss>0;
+    const hasCarry  = d.usedFromPrev > 0.01;
+    let taxLabel;
+    if(d.netTax > 0){
+      taxLabel = fEur(d.netTax);
+      if(samYrComp) taxLabel += '<div style="font-size:.62rem;color:var(--text3);line-height:1.3">−'+fEur(d.loss)+' comp. anno</div>';
+      if(hasCarry)  taxLabel += '<div style="font-size:.62rem;color:var(--text3);line-height:1.3">−'+fEur(d.usedFromPrev)+' riporto prec.</div>';
+    } else if(d.gain>0 || d.loss>0){
+      taxLabel = '€ 0,00';
+      if(hasCarry) taxLabel += '<div style="font-size:.62rem;color:var(--green);line-height:1.3">compensata con riporto</div>';
+      else if(samYrComp) taxLabel += '<div style="font-size:.62rem;color:var(--green);line-height:1.3">comp. intra-anno</div>';
+    } else {
+      taxLabel = '—';
+    }
     return '<tr>'
       +'<td>'+yr+'</td>'
       +'<td>'+fEur(d.revenue)+'</td>'
       +'<td class="'+(d.gain>0?'fy-pos':'fy-dim')+'">'+(d.gain>0?'+'+fEur(d.gain):fEur(0))+'</td>'
       +'<td class="'+(d.loss>0?'fy-neg':'fy-dim')+'">'+(d.loss>0?'−'+fEur(d.loss):'—')+'</td>'
-      +'<td class="'+(d.tax>0?'fy-amber':'fy-dim')+'">'+(d.tax>0?fEur(d.tax):'—')+'</td>'
+      +'<td class="'+(d.netTax>0?'fy-amber':'fy-dim')+'">'+taxLabel+'</td>'
       +(yr>='2023'?'<td class="fy-amber" style="font-size:.7rem">0,2% val.31/12</td>':'<td class="fy-dim">—</td>')
       +'</tr>';
   }).join('');
 
   el('fyTableWrap').innerHTML = '<table class="fy-table">'
-    +'<thead><tr><th style="text-align:left">Anno</th><th>Ricavi</th><th>Plusvalenze</th><th>Minusvalenze</th><th>Imposta 26%</th><th>IVAFE</th></tr></thead>'
+    +'<thead><tr><th style="text-align:left">Anno</th><th>Ricavi</th><th>Plusvalenze</th><th>Minusvalenze</th><th>Imposta netta 26%</th><th>IVAFE</th></tr></thead>'
     +'<tbody>'+rows_html+'</tbody>'
     +'<tfoot><tr>'
     +'<td>Totali</td>'
     +'<td>'+fEur(years.reduce((s,y)=>s+byYear[y].revenue,0))+'</td>'
     +'<td class="'+(totGain>0?'fy-pos':'fy-dim')+'">'+(totGain>0?'+'+fEur(totGain):'—')+'</td>'
     +'<td class="'+(totLoss>0?'fy-neg':'fy-dim')+'">'+(totLoss>0?'−'+fEur(totLoss):'—')+'</td>'
-    +'<td class="'+(totTax>0?'fy-amber':'fy-dim')+'">'+(totTax>0?fEur(totTax):'—')+'</td>'
+    +'<td class="'+(totNetTax>0?'fy-amber':'fy-dim')+'">'+(totNetTax>0?fEur(totNetTax):'—')+'</td>'
     +'<td>—</td>'
     +'</tr></tfoot></table>';
 
-  // Alert RT94 se ci sono minusvalenze
+  // Alert minusvalenze residue (con calcolo preciso del residuo)
   const alerts = el('fyAlerts');
   if(alerts){
     let html = '';
-    years.forEach(yr=>{
-      if(byYear[yr].loss>0)
-        html+='<div class="fiscal-alert warn" style="margin-top:.5rem"><span class="fiscal-alert-icon">⚠</span>'
-          +'<span>'+yr+': minusvalenza di <b>'+fEur(byYear[yr].loss)+'</b> — riportabile fino al '+(parseInt(yr)+4)+'. Indica in RT94.</span></div>';
+    Object.keys(rawLossAlerts).sort().forEach(yr=>{
+      const orig  = rawLossAlerts[yr];
+      const resid = finalCredits[yr]||0;
+      const used  = orig - resid;
+      const expYr = parseInt(yr)+4;
+      const curYrN= new Date().getFullYear();
+      if(expYr < curYrN){ return; } // già scaduta, non mostrare
+      if(resid < 0.01){ return; }   // già consumata tutta, non mostrare
+      const pctUsed = orig>0?(used/orig*100).toFixed(0):0;
+      const cls = resid > 0 ? 'warn' : 'neutral';
+      html+='<div class="fiscal-alert '+cls+'" style="margin-top:.5rem"><span class="fiscal-alert-icon">⚠</span>'
+        +'<span>Minusvalenza <b>'+yr+'</b>: '
+        +(used>0.01?'<span style="color:var(--text3)">originale '+fEur(orig)+' · già compensati '+fEur(used)+' ('+pctUsed+'%)</span><br>':'')
+        +'Residuo riportabile: <b style="color:var(--red)">'+fEur(resid)+'</b>'
+        +' — scade il 31/12/'+expYr+'</span></div>';
     });
+    if(!html && totLoss>0)
+      html='<div class="fiscal-alert neutral" style="margin-top:.5rem"><span class="fiscal-alert-icon">✓</span><span>Tutte le minusvalenze pregresse sono state compensate con plusvalenze successive.</span></div>';
     alerts.innerHTML = html;
   }
 }
-
 function updateSimStatic() {
   const btcEff=getBtcEff();
   set('sim_cur_btc', rows.length?fBtc(btcEff):'—');
@@ -2133,6 +2303,45 @@ const HIST_PRICES = {
 // Prezzi editati dall'utente
 let userPrices = {};
 
+function getYearDaysHeld(yr) {
+  // Calcola i giorni effettivi in cui si è detenuto almeno 1 satoshi nel corso dell'anno
+  // per il calcolo prorata IVAFE.
+  // Approccio semplificato ma fiscalmente ragionevole:
+  // - data inizio possesso = data primo acquisto nell'anno (o inizio anno se avevo già BTC)
+  // - data fine possesso   = 31/12 (o data ultima vendita totale se si è azzerati)
+  const yearStart = new Date(yr+'-01-01');
+  const yearEnd   = new Date(yr+'-12-31');
+  const daysInYear= Math.round((yearEnd-yearStart)/86400000)+1;
+
+  // Avevo BTC al 1/1?
+  const btcAtStart = getYearEndBtc(String(parseInt(yr)-1));
+  let firstDay, lastDay;
+
+  if(btcAtStart > 1e-9) {
+    firstDay = yearStart; // già posseduto dall'inizio
+  } else {
+    // primo acquisto dell'anno
+    const firstAcq = rows.filter(r=>r.date.slice(0,4)===yr).sort((a,b)=>a.date.localeCompare(b.date))[0];
+    if(!firstAcq) return 0; // nessun acquisto in questo anno
+    firstDay = new Date(firstAcq.date);
+  }
+
+  // Ultimo giorno: 31/12 oppure il giorno in cui i BTC sono diventati 0
+  const btcAtEnd = getYearEndBtc(yr);
+  if(btcAtEnd > 1e-9) {
+    lastDay = yearEnd;
+  } else {
+    // Trova l'ultima vendita dell'anno che ha azzerato
+    const lastSale = sales
+      .filter(s=>s.date.slice(0,4)===yr)
+      .sort((a,b)=>b.date.localeCompare(a.date))[0];
+    lastDay = lastSale ? new Date(lastSale.date) : yearEnd;
+  }
+
+  const daysHeld = Math.max(1, Math.round((lastDay-firstDay)/86400000)+1);
+  return Math.min(daysHeld, daysInYear) / daysInYear;
+}
+
 function getYearEndBtc(yr) {
   // BTC posseduti al 31/12 dell'anno yr
   // = acquisti entro 31/12/yr + correzioni entro 31/12/yr - vendite entro 31/12/yr
@@ -2169,7 +2378,8 @@ function renderHoldingDecl() {
     const histP = HIST_PRICES[yr] || 0;
     const priceVal = userPrices[yr] !== undefined ? userPrices[yr] : histP;
     const val = btcHeld * priceVal;
-    const ivafe = hasIvafe && val > 0 ? val * 0.002 : 0;
+    const prorata = getYearDaysHeld(yr);
+  const ivafe = hasIvafe && val > 0 ? val * 0.002 * prorata : 0;
     // Non sommiamo i valori fra anni (sarebbero gli stessi BTC contati più volte)
     // Sommiamo solo l'IVAFE che è effettivamente dovuta per ogni anno
     totIvafe += ivafe;
@@ -2214,7 +2424,8 @@ function onPriceInput(inp) {
   const btcHeld = getYearEndBtc(yr);
   const val = btcHeld * price;
   const hasIvafe = yr >= '2023';
-  const ivafe = hasIvafe && val > 0 ? val * 0.002 : 0;
+  const prorata2 = getYearDaysHeld(yr);
+  const ivafe = hasIvafe && val > 0 ? val * 0.002 * prorata2 : 0;
 
   const cells = row.querySelectorAll('td');
   // td: 0=anno, 1=btc, 2=input, 3=valore, 4=ivafe, 5=rw, 6=note
@@ -2255,7 +2466,9 @@ function openHoldingYear(yr) {
   const valEnd   = btcHeld  * price;
   const valStart = btcStart * priceS;
   const hasIvafe = yr >= '2023';
-  const ivafe    = hasIvafe && valEnd>0 ? valEnd*0.002 : 0;
+  const prorataYr = getYearDaysHeld(yr);
+  const ivafe    = hasIvafe && valEnd>0 ? valEnd*0.002*prorataYr : 0;
+  const daysHeldPct = Math.round(prorataYr*100);
   const isCurrent= yr===String(new Date().getFullYear());
 
   const cutEnd   = yr+'-12-31';
@@ -2263,19 +2476,26 @@ function openHoldingYear(yr) {
   const acqAnno  = rows.filter(r=>r.date>cutStart&&r.date<=cutEnd);
   const vendAnno = sales.filter(s=>s.date>cutStart&&s.date<=cutEnd);
   const gainAnno = vendAnno.reduce((s,sl)=>s+sl.gain,0);
-  const taxAnno  = vendAnno.reduce((s,sl)=>s+sl.tax,0);
+  const taxAnno  = vendAnno.reduce((s,sl)=>s+sl.tax,0); // lordo per riferimento
   const revAnno  = vendAnno.reduce((s,sl)=>s+sl.revenue,0);
   const costAnno = vendAnno.reduce((s,sl)=>s+(sl.revenue-sl.gain),0);
 
-  // Minusvalenze anni precedenti ancora riportabili
-  const minsPrecByYear = {};
-  sales.filter(s=>s.date<=cutStart&&s.gain<0).forEach(s=>{
-    const y=s.date.slice(0,4);
-    minsPrecByYear[y]=(minsPrecByYear[y]||0)+Math.abs(s.gain);
+  // Netting intra-anno: le minusvalenze dello stesso anno riducono prima le plusvalenze
+  const gainPos = vendAnno.filter(sl=>sl.gain>0).reduce((s,sl)=>s+sl.gain,0);
+  const gainNeg = vendAnno.filter(sl=>sl.gain<0).reduce((s,sl)=>s+Math.abs(sl.gain),0);
+  const gainNetto = Math.max(0, gainPos - gainNeg);          // gain netto intra-anno
+  const lossResiduaAnno = Math.max(0, gainNeg - gainPos);    // perdita residua da riportare
+
+  // Crediti disponibili all'INIZIO di quest'anno (prima che questo anno li consumi)
+  const credsBefore = getCreditsBeforeYear(yr);
+  let totMinsPrec = 0;
+  Object.keys(credsBefore).forEach(lossYr => {
+    if(lossYr >= yr) return;
+    if(parseInt(yr) - parseInt(lossYr) > 4) return;
+    totMinsPrec += credsBefore[lossYr] || 0;
   });
-  const totMinsPrec = Object.values(minsPrecByYear).reduce((s,v)=>s+v,0);
-  const maxComp = Math.max(0, gainAnno>0 ? Math.min(totMinsPrec, gainAnno) : 0);
-  const rt25 = Math.max(0, gainAnno - maxComp);
+  const maxComp = Math.max(0, gainNetto > 0 ? Math.min(totMinsPrec, gainNetto) : 0);
+  const rt25 = Math.max(0, gainNetto - maxComp);
 
   set('hy_title','Anno '+yr+(isCurrent?' — Anno in corso':' — Riepilogo dichiarazione'));
 
@@ -2336,7 +2556,7 @@ function openHoldingYear(yr) {
     html+='<div style="background:var(--amber-bg);border:1px solid var(--amber-brd);border-radius:8px;padding:.75rem 1rem;margin:.5rem 0">';
     html+='<div style="font-family:var(--sans);font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:.45rem">IVAFE = Valore 31/12 × 0,2%</div>';
     html+=row2('Valore al 31/12/'+yr+' (base imponibile)', noPrice?'— inserisci prezzo':''+fEur(valEnd), noPrice?'var(--red)':'var(--text)');
-    html+=row2('Aliquota', '0,2% (DL 201/2011 come modif. L. 197/2022)', 'var(--text)');
+    html+=row2('Aliquota', '0,2% annuo × '+Math.round(prorataYr*100)+'% (prorata giorni possesso)', 'var(--text)');
     html+=row2('IVAFE dovuta', noPrice?'—':fEur(ivafe), noPrice?'var(--text3)':'var(--amber)');
     html+=row2('Codice tributo F24', '4043 — Imposta su cripto-attività', 'var(--text)');
     html+=row2('Scadenza versamento', 'Entro il termine delle imposte (giugno/luglio)', 'var(--text)');
@@ -2351,17 +2571,27 @@ function openHoldingYear(yr) {
     html+='<div style="background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:.75rem 1rem;margin:.5rem 0">';
     html+=codeRow('RT21','Corrispettivi percepiti (ricavi lordi)',fEur(revAnno));
     html+=codeRow('RT22','Costo o valore di acquisto (metodo FIFO)',fEur(costAnno),'var(--text2)');
-    html+=codeRow('RT23','Plusvalenza/Minusvalenza (RT21 − RT22)',
+    html+=codeRow('RT23','Plusvalenza/Minusvalenza netta anno (RT21 − RT22)',
       (gainAnno>=0?'+':'')+fEur(gainAnno), gainAnno>=0?'var(--green)':'var(--red)');
-    if(totMinsPrec>0&&gainAnno>0){
+    // Compensazione intra-anno: se stesso anno ha sia plus che minus
+    if(gainPos>0 && gainNeg>0){
+      html+=codeRow('⚖','Compensazione intra-anno: +'+fEur(gainPos)+' − '+fEur(gainNeg),
+        'Imponibile netto: '+fEur(gainNetto),'var(--text2)');
+    }
+    const imponibilePreComp = gainNetto; // dopo compensazione intra-anno
+    if(totMinsPrec>0 && imponibilePreComp>0){
       html+=codeRow('RT24','Minusvalenze anni prec. portate in detrazione',
         maxComp>0?'−'+fEur(maxComp):'0 (non compensabili)','var(--text2)');
-      html+=codeRow('RT25','Imponibile netto (RT23 − RT24)',fEur(rt25));
+      html+=codeRow('RT25','Imponibile netto (dopo RT24)',fEur(rt25));
       html+=codeRow('RT29','Imposta lorda (RT25 × 26%)',fEur(rt25*0.26),'var(--amber)');
     }
+    const taxNetta = rt25 > 0 ? rt25*0.26 : (gainNetto > 0 ? gainNetto*0.26 : 0);
     html+=codeRow('RT30','Imposta netta dovuta (26%)',
-      taxAnno>0?fEur(taxAnno):'€ 0,00 (perdita)', taxAnno>0?'var(--amber)':'var(--text3)');
-    if(gainAnno<0){
+      taxNetta>0?fEur(taxNetta):'€ 0,00 (perdita o compensata)', taxNetta>0?'var(--amber)':'var(--text3)');
+    if(lossResiduaAnno > 0.01){
+      html+=codeRow('RT94','Minusvalenza residua anno (da riportare)',
+        fEur(lossResiduaAnno)+' — fino al '+(parseInt(yr)+4),'var(--red)');
+    } else if(gainAnno<0){
       html+=codeRow('RT94','Minusvalenza riportabile (max 4 anni)',
         fEur(Math.abs(gainAnno))+' — fino al '+(parseInt(yr)+4),'var(--red)');
     }
