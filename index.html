@@ -321,6 +321,27 @@ table.fifo-t tfoot td:first-child{text-align:left;font-family:var(--sans);font-s
 .btn-apply:hover{background:#38d670}
 
 /* Storico vendite nel simulatore */
+/* Tabella vendite — registro completo */
+table.sales-reg{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.78rem}
+table.sales-reg thead tr{background:var(--bg2);border-bottom:1px solid var(--amber-brd)}
+table.sales-reg thead th{padding:.52rem .9rem;font-family:var(--sans);font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;text-align:right;white-space:nowrap;color:var(--amber)}
+table.sales-reg thead th:first-child{text-align:left}
+table.sales-reg tbody tr{border-bottom:1px solid var(--line);cursor:pointer;transition:background .1s}
+table.sales-reg tbody tr:last-child{border-bottom:none}
+table.sales-reg tbody tr:hover{background:rgba(251,191,36,.04)}
+table.sales-reg td{padding:.65rem .9rem;text-align:right;white-space:nowrap;vertical-align:middle}
+table.sales-reg td:first-child{text-align:left}
+table.sales-reg .sr-date{color:var(--text2);font-size:.76rem}
+table.sales-reg .sr-btc{color:var(--btc);font-weight:700}
+table.sales-reg .sr-price{color:var(--text3);font-size:.74rem}
+table.sales-reg .sr-rev{color:var(--text);font-weight:600}
+table.sales-reg .sr-gain-pos{color:var(--green);font-weight:700}
+table.sales-reg .sr-gain-neg{color:var(--red);font-weight:700}
+table.sales-reg .sr-tax{color:var(--amber)}
+table.sales-reg .sr-tax.zero{color:var(--text3);font-weight:400}
+table.sales-reg .sr-exch{font-family:var(--sans);font-size:.7rem;color:var(--text3)}
+table.sales-reg tfoot tr{background:var(--bg2);border-top:2px solid var(--amber-brd)}
+table.sales-reg tfoot td{padding:.6rem .9rem;font-weight:700}
 .sale-row{display:flex;align-items:center;gap:.65rem;padding:.72rem 1.2rem;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.78rem;transition:background .1s}
 .sale-row:last-child{border-bottom:none}
 .sale-row:hover{background:var(--bg2)}
@@ -477,6 +498,139 @@ table.holding-t tfoot td:first-child{text-align:left;font-family:var(--sans);fon
 .yr-tag.active{background:var(--green-bg);border:1px solid var(--green-brd);color:var(--green)}
 .yr-tag.past{background:var(--bg3);border:1px solid var(--line2);color:var(--text3)}
 
+/* ── FISCALITÀ — layout a 3 sezioni ── */
+.fis-layout { display:flex; flex-direction:column; gap:1rem; }
+
+/* Form Registra vendita — full width, prominente */
+.reg-vendita-card {
+  background:var(--bg1); border:1px solid var(--btc-brd);
+  border-left:4px solid var(--btc); border-radius:var(--r);
+  overflow:hidden; box-shadow:var(--sh);
+}
+.reg-vendita-hdr {
+  display:flex; align-items:center; gap:.7rem;
+  padding:.85rem 1.25rem;
+  background:linear-gradient(90deg,rgba(240,146,28,.06),transparent 60%);
+  border-bottom:1px solid var(--btc-brd);
+}
+.reg-vendita-hdr-title {
+  font-family:var(--sans); font-size:.92rem; font-weight:700; color:var(--btc); flex:1;
+}
+.reg-vendita-body { padding:1.1rem 1.25rem; }
+.reg-vendita-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr auto;
+  gap:.65rem;
+  align-items:end;
+}
+@media(max-width:900px){ .reg-vendita-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px){ .reg-vendita-grid { grid-template-columns:1fr; } }
+
+.reg-vendita-note {
+  display:grid; grid-template-columns:1fr 1fr; gap:.65rem; margin-top:.65rem;
+}
+@media(max-width:600px){ .reg-vendita-note { grid-template-columns:1fr; } }
+
+/* Preview inline — compare subito dopo il form */
+.preview-bar {
+  display:flex; align-items:center; gap:0; flex-wrap:nowrap;
+  background:var(--bg2); border:1px solid var(--line);
+  border-radius:var(--r-sm); overflow:hidden; margin-top:.85rem;
+}
+.preview-item {
+  flex:1; padding:.65rem .9rem; border-right:1px solid var(--line);
+  min-width:0;
+}
+.preview-item:last-child { border-right:none; }
+.preview-lbl { font-family:var(--sans); font-size:.62rem; font-weight:500; letter-spacing:.06em; text-transform:uppercase; color:var(--text3); margin-bottom:.2rem; }
+.preview-val { font-family:var(--mono); font-size:clamp(.82rem,.9rem,1rem); font-weight:700; color:var(--text); white-space:nowrap; }
+.preview-val.btc  { color:var(--btc); }
+.preview-val.amber{ color:var(--amber); }
+.preview-val.green{ color:var(--green); }
+.preview-val.red  { color:var(--red); }
+
+/* Layout principale tab: 2 colonne ── */
+.fis-main-layout {
+  display:grid;
+  grid-template-columns:1fr 20rem;
+  gap:.9rem;
+  align-items:start;
+}
+@media(max-width:1050px){ .fis-main-layout { grid-template-columns:1fr; } }
+
+/* Sezione full-width sotto ── */
+.fis-fullwidth { display:flex; flex-direction:column; gap:1rem; }
+
+/* Exchange select */
+.exchange-sel {
+  width:100%; font-family:var(--sans); font-size:.82rem;
+  background:var(--bg2); border:1px solid var(--line2);
+  border-radius:var(--r-sm); color:var(--text);
+  padding:.52rem .75rem; outline:none; cursor:pointer;
+  transition:border-color .15s;
+}
+.exchange-sel:focus { border-color:var(--btc); }
+
+/* ══ POLISH GLOBALE ══ */
+
+/* side-title: variante con accent color */
+.side-title{font-family:var(--sans);font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:.72rem;padding-bottom:.55rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.45rem}
+.side-title::before{content:'';width:3px;height:.85rem;border-radius:99px;background:var(--line2);flex-shrink:0}
+.side-title.btc::before{background:var(--btc)}
+.side-title.green::before{background:var(--green)}
+.side-title.red::before{background:var(--red)}
+.side-title.amber::before{background:var(--amber)}
+
+/* sh-badge: variante colorata per anni/note importanti */
+.sh-badge.warn{background:var(--amber-bg);border-color:var(--amber-brd);color:var(--amber)}
+.sh-badge.ok{background:var(--green-bg);border-color:var(--green-brd);color:var(--green)}
+
+/* form label: più carattere */
+.fld label{font-family:var(--sans);font-size:.72rem;font-weight:600;color:var(--text2);letter-spacing:.01em}
+.fld label .req{color:var(--btc);margin-left:.15rem;font-size:.7rem}
+.fld label .opt{color:var(--text4);margin-left:.3rem;font-size:.65rem;font-weight:400;font-style:italic}
+
+/* input: glow più forte al focus */
+.fld input:focus,.exchange-sel:focus{border-color:var(--btc);box-shadow:0 0 0 3px rgba(240,146,28,.12)}
+
+/* fhint con varianti */
+.fhint.ok{color:var(--green);font-style:normal}
+.fhint.warn{color:var(--amber);font-style:normal}
+.fhint.info{color:var(--btc);font-style:normal}
+
+/* form-title: più marcato */
+.form-title{font-family:var(--sans);font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text2);margin-bottom:.9rem;display:flex;align-items:center;gap:.65rem}
+
+/* side-card: border-top sottile colorato */
+.side-card{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.05rem;box-shadow:var(--sh);transition:box-shadow .15s}
+.side-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.45)}
+
+/* preview-bar: più raffinata */
+.preview-item{flex:1;padding:.7rem 1rem;border-right:1px solid var(--line);min-width:0;transition:background .15s}
+.preview-item:hover{background:var(--bg2)}
+.preview-lbl{font-family:var(--sans);font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.28rem}
+
+/* sale-row exchange badge */
+.exch-badge{display:inline-block;font-family:var(--sans);font-size:.58rem;font-weight:700;letter-spacing:.05em;padding:.08rem .38rem;border-radius:4px;text-transform:uppercase;margin-top:.12rem}
+.exch-badge.binance{background:rgba(240,185,11,.12);color:#f0b90b;border:1px solid rgba(240,185,11,.25)}
+.exch-badge.coinbase{background:rgba(59,130,246,.1);color:#3b82f6;border:1px solid rgba(59,130,246,.2)}
+.exch-badge.kraken{background:rgba(139,92,246,.1);color:#8b5cf6;border:1px solid rgba(139,92,246,.2)}
+.exch-badge.ledger{background:var(--bg3);color:var(--text2);border:1px solid var(--line2)}
+.exch-badge.default{background:var(--bg3);color:var(--text3);border:1px solid var(--line)}
+
+/* reg-vendita: form principale migliorato */
+.reg-vendita-body{padding:1.2rem 1.35rem}
+.reg-form-row{display:grid;gap:.72rem;align-items:end}
+.reg-form-row.top{grid-template-columns:8rem 1fr 1fr 1fr auto}
+.reg-form-row.bot{grid-template-columns:8rem 1fr}
+@media(max-width:1100px){.reg-form-row.top{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:700px){.reg-form-row.top,.reg-form-row.bot{grid-template-columns:1fr}}
+.reg-divider{height:1px;background:linear-gradient(90deg,var(--line),transparent 80%);margin:.85rem 0}
+
+/* fis-main-layout sidebar card — non deve superare viewport */
+.fis-main-layout > div:last-child{position:sticky;top:4rem;align-self:start}
+@media(max-width:1050px){.fis-main-layout > div:last-child{position:static}}
+
 /* ── ANIMATIONS ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .card-anim{animation:fadeUp .3s ease both}
@@ -488,6 +642,73 @@ table.holding-t tfoot td:first-child{text-align:left;font-family:var(--sans);fon
   .btn-add,.btn-corr{width:100%;text-align:center}
   input[type="date"]{width:100%!important;min-width:0}
 }
+
+/* ══ FISCALITÀ ══ */
+.fis-layout{display:flex;flex-direction:column;gap:1.1rem}
+
+/* Card form principale */
+.reg-vendita-card{background:var(--bg1);border:1px solid var(--btc-brd);border-left:4px solid var(--btc);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.reg-vendita-hdr{display:flex;align-items:center;gap:.8rem;padding:.82rem 1.3rem;background:linear-gradient(90deg,rgba(240,146,28,.07),transparent 55%);border-bottom:1px solid var(--btc-brd)}
+.reg-vendita-hdr-title{font-family:var(--sans);font-size:.88rem;font-weight:700;color:var(--btc);flex:1;letter-spacing:-.01em}
+.reg-vendita-body{padding:1.1rem 1.3rem}
+
+/* Griglia form — 4 campi + pulsante */
+.rv-grid{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:.72rem;align-items:end}
+@media(max-width:1200px){.rv-grid{grid-template-columns:repeat(2,1fr) auto}}
+@media(max-width:700px){.rv-grid{grid-template-columns:1fr}}
+
+/* Nota: full-width */
+.rv-nota{margin-top:.65rem}
+.rv-nota input{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);color:var(--text);font-family:var(--sans);font-size:.82rem;padding:.55rem .82rem;outline:none;transition:border-color .15s,box-shadow .15s}
+.rv-nota input:focus,.rv-nota input:hover{border-color:var(--btc);box-shadow:0 0 0 3px rgba(240,146,28,.08)}
+.rv-nota input::placeholder{color:var(--text4);font-style:italic}
+
+/* Divisore */
+.rv-divider{height:1px;background:linear-gradient(90deg,var(--line2),transparent 75%);margin:.9rem 0 .55rem}
+
+/* ── ANTEPRIMA (contenuta nella card) ── */
+.preview-wrap{border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-top:.82rem;background:var(--bg)}
+.preview-header{padding:.52rem 1rem;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.5rem}
+.preview-header-label{font-family:var(--sans);font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.preview-header-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
+.preview-bar{display:flex;align-items:stretch;flex-wrap:nowrap}
+.preview-item{flex:1;padding:.72rem .95rem;border-right:1px solid var(--line);min-width:0;transition:background .12s}
+.preview-item:last-child{border-right:none}
+.preview-item:hover{background:var(--bg2)}
+.preview-lbl{font-family:var(--sans);font-size:.59rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:.25rem;white-space:nowrap}
+.preview-val{font-family:var(--mono);font-size:clamp(.8rem,.95rem,1.05rem);font-weight:700;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-val.btc{color:var(--btc)}.preview-val.amber{color:var(--amber)}.preview-val.green{color:var(--green)}.preview-val.red{color:var(--red)}
+.preview-sub{font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:.12rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Flusso dentro preview */
+.preview-flow{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--bg2);border-top:1px solid var(--line)}
+.pf-item{flex:1;min-width:5.5rem;display:flex;flex-direction:column;justify-content:center;padding:.6rem .85rem;border-right:1px solid var(--line)}
+.pf-item:last-child{border-right:none}
+.pf-lbl{font-family:var(--sans);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem}
+.pf-val{font-family:var(--mono);font-size:.86rem;font-weight:700;color:var(--text);white-space:nowrap}
+.pf-val.btc{color:var(--btc)}.pf-val.amber{color:var(--amber)}.pf-val.green{color:var(--green)}.pf-val.red{color:var(--red)}.pf-val.dim{color:var(--text3)}
+.pf-op{display:flex;align-items:center;padding:0 .3rem;color:var(--text3);font-family:var(--mono);font-size:.85rem;font-weight:600;flex-shrink:0}
+
+/* Lotti FIFO dentro preview */
+.preview-lots{border-top:1px solid var(--line);padding:.7rem 1rem}
+.preview-lots-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.preview-lots-title{font-family:var(--sans);font-size:.62rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.preview-note-fiscal{padding:.6rem 1rem;border-top:1px solid var(--line);background:var(--bg2);font-family:var(--sans);font-size:.76rem;color:var(--text2);line-height:1.55}
+.preview-exch-info{padding:.5rem 1rem;border-top:1px solid var(--line)}
+.preview-confirm{padding:.85rem 1rem;border-top:1px solid var(--btc-brd);background:linear-gradient(90deg,rgba(240,146,28,.04),transparent 70%)}
+
+/* Layout bicolonna sezione 2 */
+.fis-main-layout{display:grid;grid-template-columns:1fr 19.5rem;gap:.9rem;align-items:start}
+@media(max-width:1050px){.fis-main-layout{grid-template-columns:1fr}}
+.fis-sidebar{display:flex;flex-direction:column;gap:.72rem;position:sticky;top:4.5rem;align-self:start}
+@media(max-width:1050px){.fis-sidebar{position:static}}
+
+/* Sezioni full width */
+.fis-fullwidth{display:flex;flex-direction:column;gap:1rem}
+
+/* Exchange select */
+.exchange-sel{width:100%;font-family:var(--sans);font-size:.82rem;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);color:var(--text);padding:.55rem .78rem;outline:none;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.exchange-sel:focus,.exchange-sel:hover{border-color:var(--btc);box-shadow:0 0 0 3px rgba(240,146,28,.08)}
 </style>
 </head>
 <body>
@@ -809,321 +1030,384 @@ table.holding-t tfoot td:first-child{text-align:left;font-family:var(--sans);fon
 </div><!-- /panel-stor -->
 
 
-<!-- ════════════ TAB 3: SIMULATORE 730 ════════════ -->
+<!-- ════════════ TAB 3: FISCALITÀ ════════════ -->
 <div class="panel" id="panel-730">
+
   <div class="sh">
     <div class="sh-title">Fiscalità &amp; Dichiarazione</div>
-    <div class="sh-badge">Cessione cripto-attività · metodo FIFO · art. 67 c.1 lett. c-sexies TUIR · aliquota 26%</div>
+    <div class="sh-badge">Metodo FIFO · art.67 c.1 lett.c-sexies TUIR · aliquota 26% · Quadro RW/RT</div>
   </div>
 
-  <!-- ═══ SEZIONE: DICHIARAZIONE PER IL POSSESSO ═══ -->
-  <div id="holdingDeclSection" style="display:none;margin-bottom:1.2rem">
-    <div class="sh" style="margin-bottom:.75rem">
-      <div class="sh-title" style="font-size:.9rem">Dichiarazione annuale per il possesso</div>
-      <div class="sh-badge">Quadro RW · IVAFE · obbligo monitoraggio fiscale</div>
-    </div>
+  <div class="fis-layout">
 
-    <div style="background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)">
+    <!-- ═══ 1 — REGISTRA VENDITA ═══ -->
+    <div class="reg-vendita-card">
 
-      <!-- Spiegazione compatta -->
-      <div style="padding:.85rem 1.25rem;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:.6rem">
-        <div class="fiscal-alert info" style="flex:1;min-width:200px">
-          <span class="fiscal-alert-icon">ℹ</span>
-          <span><b>Quadro RW</b> — Anche senza vendere, devi dichiarare il valore delle cripto detenute al 31/12 se su exchange esteri (Coinbase, Binance…). Obbligo dal 2020 (Circ. 30/E 2023).</span>
-        </div>
-        <div class="fiscal-alert warn" style="flex:1;min-width:200px">
-          <span class="fiscal-alert-icon">⚠</span>
-          <span><b>IVAFE</b> — Dal 2023, 0,2% sul valore al 31/12 (Quadro RW col.15). Secondo la Circolare AdE 30/E/2023 è dovuta anche per BTC su <b>hardware wallet</b> (Ledger, Trezor…) perché le cripto sono considerate "detenute all'estero" indipendentemente da dove si trova fisicamente il dispositivo.</span>
-        </div>
+      <!-- Header -->
+      <div class="reg-vendita-hdr">
+        <span style="font-size:1.05rem;opacity:.9">₿</span>
+        <span class="reg-vendita-hdr-title">Registra vendita BTC</span>
+        <span id="sim_avail_hint" style="font-family:var(--mono);font-size:.72rem;color:var(--text3)">—</span>
       </div>
 
-      <!-- Tabella anni -->
-      <div style="overflow-x:auto">
-        <table class="holding-t" id="holdingTable">
-          <thead>
-            <tr>
-              <th style="text-align:left">Anno</th>
-              <th>BTC al 31/12</th>
-              <th>Prezzo 31/12 (€)</th>
-              <th>Valore (€)</th>
-              <th>IVAFE 0,2%</th>
-              <th>Quadro RW</th>
-              <th style="text-align:left;padding-left:.5rem">Note</th>
-            </tr>
-          </thead>
-          <tbody id="holdingRows"></tbody>
-          <tfoot>
-            <tr id="holdingFoot" style="display:none">
-              <td>IVAFE totale dovuta</td>
-              <td colspan="3" style="font-family:var(--sans);font-size:.7rem;color:var(--text3)">Somma IVAFE degli anni in cui la norma è applicabile (≥ 2023)</td>
-              <td id="hd_tot_ivafe">—</td>
-              <td colspan="2"></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <div class="reg-vendita-body">
 
-      <div style="padding:.65rem 1.25rem;font-family:var(--sans);font-size:.72rem;color:var(--text3);border-top:1px solid var(--line);line-height:1.65">
-        <b>Come usare:</b> inserisci il prezzo di BTC al 31 dicembre di ogni anno per calcolare il valore dichiarabile e l'eventuale IVAFE. I prezzi storici approssimativi sono precompilati — verificali su CoinGecko o Coinbase.
-        Questa tabella è solo un supporto al calcolo. ⚠ Consulta un esperto per la tua situazione specifica.
-      </div>
-    </div>
-  </div>
+        <!-- Griglia 4 campi + pulsante -->
+        <div class="rv-grid">
 
-  <!-- LAYOUT: colonna sinistra (form + panoramica + FIFO + vendite) | colonna destra (RT + dettagli) -->
-  <div class="sim-layout">
-
-    <!-- ══ SINISTRA ══ -->
-    <div class="sim-main">
-
-      <!-- 1. INPUT: BTC da vendere + prezzo -->
-      <div class="formbox">
-        <div class="form-title">Simula vendita BTC</div>
-        <div class="frow" style="align-items:flex-end">
           <div class="fld">
-            <label>BTC da vendere</label>
-            <input type="number" id="sim_btc" placeholder="es. 0.05" min="0" step="0.00000001" oninput="calcSim()">
-            <div class="fhint" id="sim_avail_hint">—</div>
+            <label>Data <span class="opt">vendita</span></label>
+            <input type="date" id="sim_date" style="font-size:15px;width:100%" onchange="calcSim()">
           </div>
+
           <div class="fld">
-            <label>Prezzo di vendita (€/BTC)</label>
-            <input type="number" id="sim_price" min="0" step="100" oninput="calcSim()">
-            <div class="fhint" id="sim_price_hint">—</div>
+            <label>BTC da vendere <span class="req" title="campo obbligatorio">✦</span></label>
+            <input type="number" id="sim_btc" placeholder="0.00000000"
+              min="0" step="0.00000001" oninput="calcSim()" autocomplete="off">
           </div>
+
+          <div class="fld">
+            <label>Prezzo €/BTC <span class="req" title="campo obbligatorio">✦</span></label>
+            <input type="number" id="sim_price" min="0" step="100"
+              oninput="calcSim()" autocomplete="off">
+            <div class="fhint info" id="sim_price_hint">—</div>
+          </div>
+
+          <div class="fld">
+            <label>Exchange <span class="opt">piattaforma</span></label>
+            <select class="exchange-sel" id="sim_exchange" onchange="calcSim()">
+              <option value="">— Seleziona —</option>
+              <option value="binance">₿ Binance · IBAN FR/LU</option>
+              <option value="coinbase">🔵 Coinbase · USA/IE</option>
+              <option value="kraken">🟣 Kraken · USA</option>
+              <option value="bitpanda">🟡 Bitpanda · Austria</option>
+              <option value="nexo">🔷 Nexo · Bulgaria</option>
+              <option value="young_platform">🇮🇹 Young Platform · Italia</option>
+              <option value="ledger">🔒 Ledger / Trezor</option>
+              <option value="altro">⚙ Altro</option>
+            </select>
+          </div>
+
           <button class="btn-add" onclick="simSellAll()"
-            style="background:var(--bg2);color:var(--text2);border:1px solid var(--line2);box-shadow:none;flex-shrink:0"
-            title="Imposta tutti i BTC disponibili">↑ Max disp.</button>
+            style="background:var(--bg2);color:var(--text2);border:1px solid var(--line2);
+                   box-shadow:none;align-self:flex-end;font-size:.78rem;padding:.55rem .88rem;flex-shrink:0"
+            title="Imposta tutti i BTC disponibili">↑ Max</button>
+
+        </div><!-- /rv-grid -->
+
+        <!-- Nota: full-width -->
+        <div class="rv-nota">
+          <label class="fld" style="display:flex;flex-direction:column;gap:.28rem">
+            <span style="font-family:var(--sans);font-size:.72rem;font-weight:600;color:var(--text2)">
+              Nota <span class="opt">motivo, strategia, promemoria…</span>
+            </span>
+            <input type="text" id="sim_note_field"
+              placeholder="es. uscita parziale DCA · target prezzo raggiunto · emergenza liquidità">
+          </label>
         </div>
-        <div class="fhint" id="sim_hint" style="margin-top:.55rem">
-          inserisci quanti BTC vuoi vendere e a che prezzo — calcolo FIFO istantaneo
+
+        <div class="rv-divider"></div>
+        <div class="fhint info" id="sim_hint">
+          ✦ campi obbligatori — anteprima FIFO e calcolo imposte istantanei
+        </div>
+
+        <!-- ═══ ANTEPRIMA ═══ -->
+        <div id="simOverview" style="display:none">
+          <div class="preview-wrap">
+
+            <!-- Mini header anteprima -->
+            <div class="preview-header">
+              <div class="preview-header-dot"></div>
+              <span class="preview-header-label">Anteprima vendita</span>
+              <span style="font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-left:auto" id="sim_gain_sub">—</span>
+            </div>
+
+            <!-- 4 cifre chiave -->
+            <div class="preview-bar">
+              <div class="preview-item">
+                <div class="preview-lbl">Ricavo lordo</div>
+                <div class="preview-val btc" id="sim_gain_num">—</div>
+                <div class="preview-sub">incasso totale</div>
+              </div>
+              <div class="preview-item" style="background:rgba(251,191,36,.03)">
+                <div class="preview-lbl">Imposta 26%</div>
+                <div class="preview-val amber" id="sim_tax_num">—</div>
+                <div class="preview-sub" id="sim_tax_sub">—</div>
+              </div>
+              <div class="preview-item">
+                <div class="preview-lbl">Netto in tasca</div>
+                <div class="preview-val green" id="sim_net_num">—</div>
+                <div class="preview-sub" id="sim_net_sub">—</div>
+              </div>
+              <div class="preview-item">
+                <div class="preview-lbl">BTC rimasti</div>
+                <div class="preview-val" id="sim_rem_btc">—</div>
+                <div class="preview-sub">dopo vendita</div>
+              </div>
+            </div>
+
+            <!-- Flusso calcolo -->
+            <div class="preview-flow">
+              <div class="pf-item">
+                <div class="pf-lbl">Ricavo</div>
+                <div class="pf-val btc" id="sf_revenue">—</div>
+                <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:.1rem" id="sf_revenue_sub">—</div>
+              </div>
+              <div class="pf-op">−</div>
+              <div class="pf-item">
+                <div class="pf-lbl">Costo FIFO</div>
+                <div class="pf-val dim" id="sf_cost">—</div>
+                <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:.1rem" id="sf_cost_sub">—</div>
+              </div>
+              <div class="pf-op">=</div>
+              <div class="pf-item">
+                <div class="pf-lbl">Plusvalenza</div>
+                <div class="pf-val" id="sf_gain">—</div>
+                <div style="font-family:var(--sans);font-size:.6rem;color:var(--text3);margin-top:.1rem">imponibile</div>
+              </div>
+              <div class="pf-op">×26%</div>
+              <div class="pf-item">
+                <div class="pf-lbl">Imposta</div>
+                <div class="pf-val amber" id="sf_tax">—</div>
+                <div style="font-family:var(--sans);font-size:.6rem;color:var(--text3);margin-top:.1rem">sostitutiva</div>
+              </div>
+              <div class="pf-op">=</div>
+              <div class="pf-item">
+                <div class="pf-lbl">In tasca</div>
+                <div class="pf-val" id="sf_net">—</div>
+                <div style="font-family:var(--sans);font-size:.6rem;color:var(--text3);margin-top:.1rem">netto</div>
+              </div>
+            </div>
+
+            <!-- Lotti FIFO coinvolti — DENTRO l'anteprima -->
+            <div class="preview-lots" id="simLotsBox" style="display:none">
+              <div class="preview-lots-hdr">
+                <span class="preview-lots-title">Lotti FIFO coinvolti</span>
+                <span id="simLotsTitle" style="font-family:var(--mono);font-size:.68rem;color:var(--text3)">—</span>
+                <span onclick="switchTab('stor')" class="link-to"
+                  style="cursor:pointer;font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-left:auto">
+                  vedi storico ↗
+                </span>
+              </div>
+              <div style="overflow-x:auto"><div id="simLotsWrap"></div></div>
+            </div>
+
+            <!-- Nota fiscale -->
+            <div class="preview-note-fiscal" id="sim_note" style="display:none">—</div>
+
+            <!-- Info exchange -->
+            <div class="preview-exch-info" id="sim_exchange_info" style="display:none"></div>
+
+            <!-- Bottone conferma -->
+            <div class="preview-confirm">
+              <button class="btn-apply" id="simApplyBtn" onclick="applySale()" style="display:none">
+                ✓ Conferma e registra questa vendita
+              </button>
+            </div>
+
+          </div><!-- /preview-wrap -->
+        </div><!-- /simOverview -->
+
+        <!-- Hidden compat anchors -->
+        <span id="sim_cur_btc" style="display:none"></span>
+        <div id="simTaxBox" style="display:none"></div>
+        <div id="sim_sell_btc" style="display:none"></div>
+        <div id="sim_side_revenue" style="display:none"></div>
+        <div id="sim_side_tax" style="display:none"></div>
+        <div id="sim_side_net" style="display:none"></div>
+
+      </div><!-- /body -->
+    </div><!-- /reg-vendita-card -->
+
+    <!-- ═══ 2 — BICOLONNA: REGISTRO + SIDEBAR ═══ -->
+    <div class="fis-main-layout">
+
+      <!-- Sinistra: registro vendite -->
+      <div>
+        <div id="salesHistBox" style="display:none">
+          <div class="sh" style="margin-bottom:.75rem">
+            <div class="sh-title" style="font-size:.88rem">📋 Registro vendite</div>
+            <div class="sh-badge" id="salesHistCount"></div>
+            <span style="font-family:var(--sans);font-size:.7rem;color:var(--text3);margin-left:auto;cursor:default">
+              click riga → dettaglio dichiarazione ↗
+            </span>
+          </div>
+          <div class="tbox">
+            <div class="tbox-hdr" style="background:linear-gradient(90deg,var(--amber-bg),transparent 60%);border-bottom:1px solid var(--amber-brd)">
+              <span class="tbox-hdr-title" style="color:var(--amber)">Registro vendite</span>
+              <span style="margin-left:auto;font-family:var(--sans);font-size:.65rem;color:var(--text3)">FIFO · lotti aggiornati</span>
+            </div>
+            <div id="salesHistWrap"></div>
+          </div>
+        </div>
+        <!-- Messaggio vuoto -->
+        <div id="salesEmptyMsg" style="display:none;text-align:center;padding:2.5rem 1rem;color:var(--text3);font-family:var(--sans);font-size:.82rem">
+          Nessuna vendita registrata — compila il form sopra per la prima
         </div>
       </div>
 
-      <!-- 2. PANORAMICA VENDITA (stile dashboard) -->
-      <div id="simOverview" style="display:none">
+      <!-- Destra: sidebar fiscale sticky -->
+      <div class="fis-sidebar">
 
-        <!-- Hero numero grande -->
-        <div class="sim-hero-row">
-          <div class="sim-hero-block">
-            <div class="sim-hero-label">Ricavo lordo vendita</div>
-            <div class="sim-hero-num" id="sim_gain_num">—</div>
-            <div class="sim-hero-sub" id="sim_gain_sub">—</div>
-          </div>
-          <div class="sim-hero-block sim-hero-tax" id="simTaxBox">
-            <div class="sim-hero-label">Imposta sostitutiva 26%</div>
-            <div class="sim-hero-num amber" id="sim_tax_num">—</div>
-            <div class="sim-hero-sub" id="sim_tax_sub">da versare in dichiarazione</div>
-          </div>
-          <div class="sim-hero-block">
-            <div class="sim-hero-label">Ricavo netto in tasca</div>
-            <div class="sim-hero-num" id="sim_net_num">—</div>
-            <div class="sim-hero-sub" id="sim_net_sub">ricavo − imposta</div>
+        <div class="side-card">
+          <div class="side-title btc">Portfolio attuale</div>
+          <div class="side-row"><span class="side-lbl">Capitale investito</span><span class="side-val" id="sp_inv">—</span></div>
+          <div class="side-row"><span class="side-lbl">BTC posseduti</span><span class="side-val btc" id="sp_btc">—</span></div>
+          <div class="side-row"><span class="side-lbl">Prezzo medio carico</span><span class="side-val" id="sp_avg">—</span></div>
+          <div class="side-row"><span class="side-lbl">Valore attuale</span><span class="side-val btc" id="sp_val">—</span></div>
+          <div class="side-row"><span class="side-lbl">Gain non realizzato</span><span class="side-val" id="sp_gain">—</span></div>
+          <div class="side-row side-row-accent">
+            <span class="side-lbl" style="font-weight:600;color:var(--text)">Netto ipotetico</span>
+            <span class="side-val lg" id="sp_net">—</span>
           </div>
         </div>
 
-        <!-- Strip calcolo: come il flusso dashboard -->
-        <div class="sim-flow-strip">
-          <div class="sim-flow-item">
-            <div class="sf-lbl">Ricavo lordo</div>
-            <div class="sf-val btc" id="sf_revenue">—</div>
-            <div class="sf-sub" id="sf_revenue_sub">—</div>
-          </div>
-          <div class="sf-op">−</div>
-          <div class="sim-flow-item">
-            <div class="sf-lbl">Costo d'acquisto FIFO</div>
-            <div class="sf-val dim" id="sf_cost">—</div>
-            <div class="sf-sub" id="sf_cost_sub">—</div>
-          </div>
-          <div class="sf-op">=</div>
-          <div class="sim-flow-item">
-            <div class="sf-lbl">Plusvalenza lorda</div>
-            <div class="sf-val" id="sf_gain">—</div>
-            <div class="sf-sub">imponibile</div>
-          </div>
-          <div class="sf-op">×26%</div>
-          <div class="sim-flow-item">
-            <div class="sf-lbl">Imposta</div>
-            <div class="sf-val amber" id="sf_tax">—</div>
-            <div class="sf-sub">sostitutiva</div>
-          </div>
-          <div class="sf-op">=</div>
-          <div class="sim-flow-item sf-result">
-            <div class="sf-lbl">In tasca netto</div>
-            <div class="sf-val" id="sf_net">—</div>
-            <div class="sf-sub">dopo tasse</div>
+        <div class="side-card" id="simAfterCard" style="display:none">
+          <div class="side-title btc">Dopo questa vendita</div>
+          <div class="side-row"><span class="side-lbl">Ricavo lordo</span><span class="side-val btc" id="sim_side_revenue_v">—</span></div>
+          <div class="side-row"><span class="side-lbl">Imposta 26%</span><span class="side-val amber" id="sim_side_tax_v">—</span></div>
+          <div class="side-row"><span class="side-lbl">Netto incassato</span><span class="side-val green" id="sim_side_net_v">—</span></div>
+          <div class="side-row side-row-accent">
+            <span class="side-lbl" style="font-weight:600;color:var(--text)">BTC rimasti</span>
+            <span class="side-val lg btc" id="sim_rem_btc_v">—</span>
           </div>
         </div>
 
-        <!-- Nota -->
-        <div class="sim-note" id="sim_note">—</div>
-      </div>
-
-      <!-- 3. LOTTI FIFO -->
-      <div class="tbox-fifo" id="simLotsBox" style="display:none">
-        <div class="tbox-hdr">
-          <span class="tbox-hdr-title" id="simLotsTitle">Lotti acquisto coinvolti (FIFO)</span>
-          <span onclick="switchTab('stor')" class="link-to"
-            style="cursor:pointer;font-family:var(--mono);font-size:.7rem;color:var(--text3)">
-            vedi storico completo ↗
-          </span>
-        </div>
-        <div style="overflow-x:auto"><div id="simLotsWrap"></div></div>
-      </div>
-
-      <!-- 4. BOTTONE REGISTRA -->
-      <button class="btn-apply" id="simApplyBtn" onclick="applySale()" style="display:none">
-        ✓ Registra questa vendita — aggiorna storico e saldi
-      </button>
-
-      <!-- 5. VENDITE GIÀ REGISTRATE -->
-      <div id="salesHistBox" style="display:none">
-        <div class="sh" style="margin-top:1.5rem;margin-bottom:.75rem">
-          <div class="sh-title" style="font-size:.9rem">Vendite già registrate</div>
-          <div class="sh-badge" id="salesHistCount"></div>
-        </div>
-        <div class="tbox">
-          <div class="tbox-hdr" style="background:var(--amber-bg);border-bottom-color:var(--amber-brd)">
-            <span class="tbox-hdr-title" style="color:var(--amber)">Registro vendite</span>
-            <span style="font-family:var(--mono);font-size:.7rem;color:var(--text3)">FIFO applicato · lotti aggiornati</span>
+        <div class="side-card">
+          <div class="side-title green">Quadro RT — Anteprima</div>
+          <div style="font-family:var(--sans);font-size:.68rem;color:var(--text3);margin-bottom:.55rem;line-height:1.5">
+            Sez.II · Cripto-attività · art.67 TUIR
           </div>
-          <div id="salesHistWrap"></div>
+          <div class="rt-row"><span class="rt-lbl"><b class="rt-code">RT21</b>Corrispettivi</span><span class="rt-val" id="rt21">—</span></div>
+          <div class="rt-row"><span class="rt-lbl"><b class="rt-code">RT22</b>Costo FIFO</span><span class="rt-val dim" id="rt22">—</span></div>
+          <div class="rt-row"><span class="rt-lbl"><b class="rt-code">RT23</b>Plusvalenza</span><span class="rt-val" id="rt23">—</span></div>
+          <div class="rt-row" style="padding-top:.55rem;border-top:2px solid var(--line2)!important">
+            <span class="rt-lbl" style="font-weight:700;color:var(--text)"><b class="rt-code">RT30</b>Imposta 26%</span>
+            <span class="rt-val amber" id="rt30">—</span>
+          </div>
+          <div class="rt-row" id="rt94row" style="display:none">
+            <span class="rt-lbl" style="color:var(--red)"><b class="rt-code">RT94</b>Minus. da riportare</span>
+            <span class="rt-val red" id="rt94">—</span>
+          </div>
         </div>
-      </div>
 
-    </div><!-- /sim-main -->
+        <div class="side-card" id="ivafeCurCard" style="display:none">
+          <div class="side-title amber">IVAFE anno corrente</div>
+          <div class="side-row"><span class="side-lbl">Valore portfolio ora</span><span class="side-val btc" id="ivafe_val">—</span></div>
+          <div class="side-row side-row-accent">
+            <span class="side-lbl" style="font-weight:600">IVAFE stimata</span>
+            <span class="side-val lg amber" id="ivafe_est">—</span>
+          </div>
+          <div style="font-size:.67rem;color:var(--text4);margin-top:.45rem;font-style:italic;line-height:1.5">
+            0,2% × valore 31/12 × giorni possesso/365
+          </div>
+        </div>
 
-    <!-- ══ DESTRA: colonna dettagli 730 ══ -->
-    <div class="sim-side">
+      </div><!-- /fis-sidebar -->
+    </div><!-- /fis-main-layout -->
 
-      <!-- Portfolio reale attuale -->
-      <div class="side-card">
-        <div class="side-title">Portfolio attuale</div>
-        <div class="side-row"><span class="side-lbl">Capitale investito</span><span class="side-val" id="sp_inv">—</span></div>
-        <div class="side-row"><span class="side-lbl">BTC posseduti</span><span class="side-val btc" id="sp_btc">—</span></div>
-        <div class="side-row"><span class="side-lbl">Prezzo medio carico</span><span class="side-val" id="sp_avg">—</span></div>
-        <div class="side-row"><span class="side-lbl">Valore attuale</span><span class="side-val btc" id="sp_val">—</span></div>
-        <div class="side-row"><span class="side-lbl">Guadagno non realizz.</span><span class="side-val" id="sp_gain">—</span></div>
-        <div class="side-row side-row-accent">
-          <span class="side-lbl" style="font-weight:600;color:var(--text)">Netto se vendessi tutto</span>
-          <span class="side-val lg" id="sp_net">—</span>
-        </div>
-      </div>
+    <!-- ═══ 3 — SEZIONI FULL-WIDTH ═══ -->
+    <div class="fis-fullwidth">
 
-      <!-- Saldo dopo la simulazione -->
-      <div class="side-card">
-        <div class="side-title">Saldo dopo vendita</div>
-        <div class="side-row"><span class="side-lbl">BTC disponibili ora</span><span class="side-val btc" id="sim_cur_btc">—</span></div>
-        <div class="side-row"><span class="side-lbl">BTC venduti (simulazione)</span><span class="side-val" id="sim_sell_btc">—</span></div>
-        <div class="side-row"><span class="side-lbl">Ricavo lordo</span><span class="side-val btc" id="sim_side_revenue">—</span></div>
-        <div class="side-row"><span class="side-lbl">Imposta 26%</span><span class="side-val amber" id="sim_side_tax">—</span></div>
-        <div class="side-row"><span class="side-lbl">Ricavo netto in tasca</span><span class="side-val green" id="sim_side_net">—</span></div>
-        <div class="side-row side-row-accent">
-          <span class="side-lbl" style="font-weight:600;color:var(--text)">BTC rimasti dopo</span>
-          <span class="side-val lg" id="sim_rem_btc">—</span>
-        </div>
-      </div>
-
-      <!-- Quadro RT -->
-      <div class="side-card">
-        <div class="side-title">Quadro RT — Modello Redditi PF</div>
-        <div style="font-family:var(--sans);font-size:.73rem;color:var(--text3);margin-bottom:.72rem;line-height:1.6">
-          Sezione II – Plusvalenze da cripto-attività<br>
-          art. 67 c.1 lett. c-sexies TUIR
-        </div>
-        <div class="rt-row">
-          <span class="rt-lbl"><b class="rt-code">RT21</b>Corrispettivi percepiti</span>
-          <span class="rt-val" id="rt21">—</span>
-        </div>
-        <div class="rt-row">
-          <span class="rt-lbl"><b class="rt-code">RT22</b>Costo o valore d'acquisto</span>
-          <span class="rt-val dim" id="rt22">—</span>
-        </div>
-        <div class="rt-row">
-          <span class="rt-lbl"><b class="rt-code">RT23</b>Plusvalenza (RT21 − RT22)</span>
-          <span class="rt-val" id="rt23">—</span>
-        </div>
-        <div class="rt-row" style="padding-top:.7rem;border-top:2px solid var(--line2)!important">
-          <span class="rt-lbl" style="font-weight:700;color:var(--text)"><b class="rt-code">RT30</b>Imposta dovuta (26%)</span>
-          <span class="rt-val amber" id="rt30">—</span>
-        </div>
-        <div class="rt-row" id="rt94row" style="display:none">
-          <span class="rt-lbl" style="color:var(--red)"><b class="rt-code">RT94</b>Minusvalenza da riportare</span>
-          <span class="rt-val red" id="rt94">—</span>
-        </div>
-        <div style="font-size:.7rem;color:var(--text4);margin-top:.85rem;line-height:1.65;font-style:italic">
-          ⚠ Dati indicativi a fini simulativi. Consulta un commercialista prima della dichiarazione definitiva.
-        </div>
-      </div>
-
-      <!-- IVAFE + Riepilogo annuale -->
+      <!-- Riepilogo fiscale per anno -->
       <div class="side-card" id="fyCard" style="display:none">
-        <div class="side-title" style="color:var(--btc)">Riepilogo fiscale per anno</div>
-        <div style="font-family:var(--sans);font-size:.73rem;color:var(--text3);margin-bottom:.7rem;line-height:1.55">
-          Plusvalenze realizzate e stima IVAFE per anno solare. Usa questi dati per compilare il Modello Redditi PF.
+        <div class="side-title btc">Riepilogo fiscale per anno</div>
+        <div style="font-family:var(--sans);font-size:.72rem;color:var(--text3);margin-bottom:.65rem;line-height:1.55">
+          Imposta netta reale — considera compensazione intra-anno e riporto minusvalenze anni precedenti.
         </div>
         <div id="fyTableWrap" style="overflow-x:auto"></div>
-        <div style="margin-top:.75rem" id="fyAlerts"></div>
+        <div style="margin-top:.72rem" id="fyAlerts"></div>
       </div>
 
-      <!-- IVAFE corrente -->
-      <div class="side-card" id="ivafeCurCard" style="display:none">
-        <div class="side-title" style="color:var(--amber)">IVAFE — Imposta sul valore</div>
-        <div style="font-family:var(--sans);font-size:.73rem;color:var(--text3);margin-bottom:.6rem;line-height:1.55">
-          0,2% annuo sul valore delle cripto al 31/12 (Quadro RW, da 2023)
+      <!-- Dichiarazione possesso -->
+      <div id="holdingDeclSection" style="display:none">
+        <div class="sh" style="margin-bottom:.75rem">
+          <div class="sh-title" style="font-size:.88rem">Dichiarazione annuale per il possesso</div>
+          <div class="sh-badge">Quadro RW · IVAFE · monitoraggio fiscale</div>
         </div>
-        <div class="side-row"><span class="side-lbl">Valore portfolio ora</span><span class="side-val btc" id="ivafe_val">—</span></div>
-        <div class="side-row side-row-accent">
-          <span class="side-lbl" style="font-weight:600">IVAFE stimata anno corrente</span>
-          <span class="side-val lg amber" id="ivafe_est">—</span>
-        </div>
-        <div style="font-size:.7rem;color:var(--text4);margin-top:.6rem;line-height:1.6;font-style:italic">
-          Basata sul valore attuale (prezzo live). Ricalcola al 31/12 con il prezzo di fine anno.
-        </div>
-      </div>
-
-      <!-- Note dichiarazione -->
-      <div class="side-card">
-        <div class="side-title">Guida alla dichiarazione</div>
-        <div style="display:flex;flex-direction:column;gap:.5rem;font-family:var(--sans);font-size:.78rem">
-          <div class="fiscal-alert info"><span class="fiscal-alert-icon">✓</span><span><b>Quadro RT</b> — Plusvalenze da cessione cripto. Compila ogni anno in cui hai venduto con guadagno. Art. 67 c.1 lett. c-sexies TUIR.</span></div>
-          <div class="fiscal-alert warn"><span class="fiscal-alert-icon">⚠</span><span><b>IVAFE (da 2023)</b> — 0,2% sul valore al 31/12. Obbligatoria se detieni su exchange esteri. Quadro RW.</span></div>
-          <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Quadro RW</b> — Se usi Coinbase, Binance o altri exchange esteri, devi dichiarare il valore detenuto anche senza vendite.</span></div>
-          <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Soglia 2023</b> — Dal 2023 tutte le plusvalenze sono tassabili (eliminata la soglia storica di €51.645,69).</span></div>
-          <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Minusvalenze</b> — Riportabili nei 4 anni successivi. Indica l'importo in RT94.</span></div>
-        </div>
-        <div style="font-size:.7rem;color:var(--text4);margin-top:.85rem;font-style:italic;line-height:1.5">⚠ Questa app è uno strumento di supporto al calcolo. I dati sono indicativi. Verifica sempre con un commercialista o tramite il sito dell'Agenzia delle Entrate.</div>
-      </div>
-
-      <!-- Metodo FIFO spiegato -->
-      <div class="side-card">
-        <div class="side-title">Metodo FIFO — come funziona</div>
-        <div style="font-family:var(--sans);font-size:.8rem;color:var(--text2);line-height:1.75">
-          <p><b style="color:var(--text)">First In, First Out</b> — i BTC acquistati per primi vengono considerati venduti per primi. Obbligatorio per le cripto in Italia.</p>
-          <div style="background:var(--bg2);border-left:3px solid var(--btc-brd);padding:.55rem .85rem;margin:.65rem 0;font-family:var(--mono);font-size:.75rem;color:var(--text3);line-height:1.7">
-            gain lotto = (prezzo vendita − prezzo acquisto) × BTC usati
-          </div>
-          <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.5rem">
-            <div style="display:flex;align-items:center;gap:.5rem">
-              <span style="color:var(--green);font-weight:700;font-family:var(--mono);font-size:.85rem">+</span>
-              <span><b style="color:var(--green)">Plusvalenza</b> → tassata 26% (imposta sostitutiva)</span>
+        <div style="background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)">
+          <div style="padding:.8rem 1.2rem;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:.55rem">
+            <div class="fiscal-alert info" style="flex:1;min-width:220px">
+              <span class="fiscal-alert-icon">ℹ</span>
+              <span><b>Quadro RW</b> — Obbligatorio per tutti: exchange esteri, Binance, Coinbase, Ledger. Secondo Circ. AdE 30/E/2023 le cripto sono "estere" per natura. Dichiara anche senza vendere.</span>
             </div>
-            <div style="display:flex;align-items:center;gap:.5rem">
-              <span style="color:var(--red);font-weight:700;font-family:var(--mono);font-size:.85rem">−</span>
-              <span><b style="color:var(--red)">Minusvalenza</b> → non tassata, riportabile 4 anni (RT94)</span>
+            <div class="fiscal-alert warn" style="flex:1;min-width:220px">
+              <span class="fiscal-alert-icon">⚠</span>
+              <span><b>IVAFE</b> — Dal 2023, 0,2% × valore al 31/12 (prorata giorni possesso). Col.15 Quadro RW. F24 codice 4043.</span>
             </div>
           </div>
-          <p style="margin-top:.65rem;color:var(--text3);font-size:.75rem">
-            I lotti parzialmente venduti riprendono dal punto esatto in cui si erano fermati.
-            <span onclick="switchTab('stor')" class="link-to" style="cursor:pointer">
-              Vedi lotti nello storico ↗
-            </span>
-          </p>
+          <div style="overflow-x:auto">
+            <table class="holding-t" id="holdingTable">
+              <thead><tr>
+                <th style="text-align:left">Anno</th>
+                <th>BTC al 31/12</th>
+                <th>Prezzo 31/12 (€/BTC)</th>
+                <th>Valore dichiarato</th>
+                <th>IVAFE dovuta</th>
+                <th>Quadro RW</th>
+                <th>Dettaglio</th>
+              </tr></thead>
+              <tbody id="holdingRows"></tbody>
+              <tfoot>
+                <tr id="holdingFoot" style="display:none">
+                  <td>IVAFE totale anni ≥ 2023</td>
+                  <td colspan="3" style="font-family:var(--sans);font-size:.68rem;color:var(--text3)">Somma prorata tutti gli anni applicabili</td>
+                  <td id="hd_tot_ivafe" style="color:var(--amber);font-weight:700">—</td>
+                  <td colspan="2"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div style="padding:.62rem 1.2rem;font-family:var(--sans);font-size:.7rem;color:var(--text3);border-top:1px solid var(--line);line-height:1.6">
+            Inserisci il prezzo BTC al 31 dicembre di ogni anno. Prezzi storici precompilati — verifica su CoinGecko. Premi 📋 per la compilazione dettagliata campo per campo.
+          </div>
         </div>
       </div>
 
-    </div><!-- /sim-side -->
+      <!-- Accordion guida -->
+      <details style="background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden">
+        <summary style="list-style:none;padding:.75rem 1.15rem;cursor:pointer;display:flex;align-items:center;gap:.65rem;background:var(--bg2);border-bottom:1px solid var(--line)">
+          <span style="font-family:var(--sans);font-size:.8rem;font-weight:600;color:var(--text);flex:1">
+            📖 Guida alla dichiarazione · Metodo FIFO · Note Binance
+          </span>
+          <span style="font-size:.7rem;color:var(--text3)">▼</span>
+        </summary>
+        <div style="padding:1rem 1.15rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div>
+            <div style="font-family:var(--sans);font-size:.75rem;font-weight:700;color:var(--text);margin-bottom:.5rem">Cosa dichiarare</div>
+            <div style="display:flex;flex-direction:column;gap:.4rem">
+              <div class="fiscal-alert info"><span class="fiscal-alert-icon">✓</span><span><b>Quadro RT</b> — Plusvalenze/Minusvalenze da cessione cripto. Compila ogni anno con vendite. Modello Redditi PF (non 730).</span></div>
+              <div class="fiscal-alert warn"><span class="fiscal-alert-icon">⚠</span><span><b>IVAFE</b> — 0,2% prorata. F24 codice 4043. Dal 2024: 1% per exchange black-list.</span></div>
+              <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Binance</b> — IBAN FR (BNP/SG) o LU. Quadro RW: paese MT ante 2022, poi KY o FR/LU. Verifica i Termini del tuo account.</span></div>
+              <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Soglia 2023</b> — Dal 2023 tutte le plusvalenze tassabili (eliminata soglia €51.645,69).</span></div>
+              <div class="fiscal-alert neutral"><span class="fiscal-alert-icon">ℹ</span><span><b>Minusvalenze</b> — Riportabili 4 anni. Compensano automaticamente le plusvalenze future. Vedi sezione riepilogo sopra.</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:var(--sans);font-size:.75rem;font-weight:700;color:var(--text);margin-bottom:.5rem">Come funziona il FIFO</div>
+            <p style="font-family:var(--sans);font-size:.8rem;color:var(--text2);line-height:1.7;margin-bottom:.5rem">
+              <b style="color:var(--btc)">First In, First Out</b> — i BTC acquistati prima vengono venduti per primi. Metodo obbligatorio per le cripto in Italia secondo AdE.
+            </p>
+            <div style="background:var(--bg2);border-left:3px solid var(--btc-brd);padding:.5rem .85rem;font-family:var(--mono);font-size:.74rem;color:var(--text3);line-height:1.8">
+              gain = (prezzo_vendita − prezzo_acquisto) × BTC_usati
+            </div>
+            <div style="margin-top:.6rem;font-family:var(--sans);font-size:.78rem;color:var(--text2)">
+              <div style="margin-bottom:.25rem"><b style="color:var(--green)">+ Plusvalenza</b> → tassata 26% · indica in RT30</div>
+              <div><b style="color:var(--red)">− Minusvalenza</b> → non tassata · riportabile 4 anni · indica in RT94</div>
+            </div>
+            <p style="margin-top:.65rem;font-family:var(--sans);font-size:.73rem;color:var(--text3)">
+              I lotti parzialmente venduti riprendono dal punto esatto.
+              <span onclick="switchTab('stor')" class="link-to" style="cursor:pointer">Vedi storico ↗</span>
+            </p>
+          </div>
+        </div>
+        <div style="padding:.55rem 1.15rem;border-top:1px solid var(--line);font-size:.68rem;color:var(--text4);font-style:italic">
+          ⚠ Strumento di supporto al calcolo — non sostituisce la consulenza fiscale. Verifica sempre su <b>agenziaentrate.gov.it</b>
+        </div>
+      </details>
 
-  </div><!-- /sim-layout -->
+    </div><!-- /fis-fullwidth -->
+  </div><!-- /fis-layout -->
 </div><!-- /panel-730 -->
 
 </div><!-- /page -->
@@ -1485,7 +1769,7 @@ function renderDashboard() {
 
   // Hero
   const hv=el('h_val'); hv.textContent=fEur(val);
-  hv.className='hero-num'+(has?(gross>=0?' pos':' neg'):'');
+  hv.className='hero-num'+(has?(gross>0?' pos':gross<0?' neg':''):'');
   el('h_chips').innerHTML=!has?'':
     (totEur>0?'<span class="chip neutral">allocato '+fEur(totEur)+'</span>':'')+
     (totCostSold>0?'<span class="chip neutral" style="opacity:.6">incassato '+fEur(totSRev)+'</span>':'')+
@@ -1512,7 +1796,7 @@ function renderDashboard() {
   else if(tax>0){ set('cf_tax',fEur(tax)); el('cf_tax').className='cf-val amber'; set('cf_tax_sub','26% × plusvalenza'); }
   else { set('cf_tax','€ 0,00'); el('cf_tax').className='cf-val dim'; set('cf_tax_sub',gross<0?'in perdita':'nessuna plus.'); }
   el('cf_net').textContent=has?fEur(port):'—';
-  el('cf_net').className='cf-val '+(has?(port>=totEur?'green':'red'):'dim');
+  el('cf_net').className='cf-val lg '+(has?(port>=totEur?'green':'red'):'dim');
   set('cf_net_sub', has?(net>=0?'+':'')+fEur(net)+' guadagno netto':'dopo tasse');
   el('cfstep_net').className='cf-step cf-result'+(has&&port<totEur?' neg':'');
 
@@ -1984,7 +2268,7 @@ function renderFiscalYear() {
     return '<tr>'
       +'<td>'+yr+'</td>'
       +'<td>'+fEur(d.revenue)+'</td>'
-      +'<td class="'+(d.gain>0?'fy-pos':'fy-dim')+'">'+(d.gain>0?'+'+fEur(d.gain):fEur(0))+'</td>'
+      +'<td class="'+(d.gain>0?'fy-pos':d.gain===0?'fy-dim':'fy-neg')+'">'+(d.gain>0?'+'+fEur(d.gain):d.gain===0?'—':fEur(0))+'</td>'
       +'<td class="'+(d.loss>0?'fy-neg':'fy-dim')+'">'+(d.loss>0?'−'+fEur(d.loss):'—')+'</td>'
       +'<td class="'+(d.netTax>0?'fy-amber':'fy-dim')+'">'+taxLabel+'</td>'
       +(yr>='2023'?'<td class="fy-amber" style="font-size:.7rem">0,2% val.31/12</td>':'<td class="fy-dim">—</td>')
@@ -2029,9 +2313,22 @@ function renderFiscalYear() {
   }
 }
 function updateSimStatic() {
+  // Popola data con oggi se non impostata
+  const simDateEl=el('sim_date');
+  if(simDateEl&&!simDateEl.value) simDateEl.value=new Date().toISOString().slice(0,10);
   const btcEff=getBtcEff();
   set('sim_cur_btc', rows.length?fBtc(btcEff):'—');
-  set('sim_avail_hint', rows.length?'disponibili: '+fBtc(btcEff)+' BTC (dopo vendite già registrate)':'nessun acquisto nella Dashboard');
+  const btcDispEl = el('sim_avail_hint');
+  if(btcDispEl){
+    if(!rows.length){
+      btcDispEl.textContent='nessun acquisto registrato';
+      btcDispEl.style.color='var(--text3)';
+    } else {
+      btcDispEl.innerHTML='<span style="font-family:var(--mono);font-weight:700;color:var(--btc);font-size:.82rem">'+fBtc(btcEff)+'</span>'
+        +' <span style="color:var(--text3)">BTC disponibili</span>'
+        +(btcEff<1e-9?'<span style="color:var(--red);margin-left:.4rem;font-size:.7rem">· tutto venduto</span>':'');
+    }
+  }
   set('sim_price_hint', btcNow()>0?'prezzo live: '+fEur(btcNow(),0)+'/BTC':'');
   updateSimPortfolio();
   renderFiscalYear();
@@ -2060,6 +2357,9 @@ function calcSim() {
     set('sim_hint','inserisci quanti BTC vuoi vendere e a che prezzo — calcolo FIFO istantaneo');
     set('sim_sell_btc','—'); set('sim_rem_btc','—');
     set('sim_side_revenue','—'); set('sim_side_tax','—'); set('sim_side_net','—');
+    const afterCard2=el('simAfterCard'); if(afterCard2) afterCard2.style.display='none';
+    const exInfoBox2=el('sim_exchange_info'); if(exInfoBox2) exInfoBox2.style.display='none';
+    ['sim_side_revenue_v','sim_side_tax_v','sim_side_net_v','sim_rem_btc_v'].forEach(id=>{const e=el(id);if(e){e.textContent='—';e.className='side-val';}});
     return;
   }
   if(!rows.length) {
@@ -2096,11 +2396,35 @@ function calcSim() {
   const netRev =revenue-tax;
   const remBtc =btcEff-simBtc;
 
-  _lastSim={date:new Date().toISOString().slice(0,10),btcSold:simBtc,price:simPrice,
+  // Data vendita: usa sim_date se impostato, altrimenti oggi
+  const simDateForSale = (el('sim_date')&&el('sim_date').value) ? el('sim_date').value : new Date().toISOString().slice(0,10);
+  _lastSim={date:simDateForSale,btcSold:simBtc,price:simPrice,
     revenue,gain,tax,lots:used.map(l=>({rowId:l.rowId,btcUsed:l.btcUsed}))};
 
   // ── Panoramica hero ──
   if(ov) ov.style.display='';
+  const afterCard=el('simAfterCard'); if(afterCard) afterCard.style.display='';
+  // Aggiorna sidebar "dopo questa vendita" con gli stessi valori
+  const sv=el('sim_side_revenue_v');if(sv){sv.textContent=fEur(revenue);sv.className='side-val btc';}
+  const st=el('sim_side_tax_v');if(st){st.textContent=fEur(tax);st.className='side-val '+(tax>0?'amber':'dim');}
+  const sn=el('sim_side_net_v');if(sn){sn.textContent=fEur(revenue-tax);sn.className='side-val '+(revenue-tax>0?'green':'red');}
+  const sr=el('sim_rem_btc_v');if(sr){sr.textContent=fBtc(btcEff-simBtc);sr.className='side-val lg '+(btcEff-simBtc>0?'btc':'red');}
+  // Info exchange
+  const exchSel=el('sim_exchange');
+  const exInfoBox=el('sim_exchange_info');
+  if(exInfoBox && exchSel){
+    const exch=exchSel.value;
+    const exchInfo={
+      binance:'<div class="fiscal-alert warn" style="margin:0"><span class="fiscal-alert-icon">ℹ</span><span><b>Binance Europa</b> — IBAN FR (BNP/Société Générale) o LU. Quadro RW: paese <b>MT</b> (Malta) ante 2022, poi <b>KY</b> (Cayman) o <b>FR</b>/LU. Verifica i Termini sul tuo account Binance.</span></div>',
+      coinbase:'<div class="fiscal-alert neutral" style="margin:0"><span class="fiscal-alert-icon">ℹ</span><span><b>Coinbase</b> — Exchange USA (Delaware). Quadro RW: paese <b>US</b>. Coinbase Europe Ltd: paese <b>IE</b> (Irlanda).</span></div>',
+      kraken:'<div class="fiscal-alert neutral" style="margin:0"><span class="fiscal-alert-icon">ℹ</span><span><b>Kraken</b> — Payward Ltd (USA). Quadro RW: paese <b>US</b>.</span></div>',
+      bitpanda:'<div class="fiscal-alert neutral" style="margin:0"><span class="fiscal-alert-icon">ℹ</span><span><b>Bitpanda</b> — Austria. Quadro RW: paese <b>AT</b>. Piattaforma europea con IBAN AT.</span></div>',
+      young_platform:'<div class="fiscal-alert info" style="margin:0"><span class="fiscal-alert-icon">✓</span><span><b>Young Platform</b> — Exchange italiano. IBAN IT. Quadro RW probabilmente non obbligatorio (sede Italia). Verifica.</span></div>',
+      ledger:'<div class="fiscal-alert neutral" style="margin:0"><span class="fiscal-alert-icon">ℹ</span><span><b>Hardware wallet</b> — Quadro RW obbligatorio secondo Circ. AdE 30/E/2023 (cripto considerate "estere" per natura). IVAFE 0,2% dovuta.</span></div>',
+    };
+    exInfoBox.style.display = exch&&exchInfo[exch] ? '' : 'none';
+    if(exch&&exchInfo[exch]) exInfoBox.innerHTML = exchInfo[exch];
+  }
 
   // Blocco 1: Ricavo lordo
   const gn=el('sim_gain_num');
@@ -2135,9 +2459,13 @@ function calcSim() {
   if(sfRes) sfRes.style.borderLeftColor=netRev>0?'var(--green)':'var(--red)';
 
   // ── Nota ──
-  set('sim_note', gain<0
-    ? 'Minusvalenza di '+fEur(Math.abs(gain))+' — non tassata, riportabile nei 4 anni successivi (rigo RT94).'
-    : 'Plusvalenza di '+fEur(gain)+' → imposta '+fEur(tax)+'. Indicare nel quadro RT, rigo RT30.');
+  const noteEl=el('sim_note');
+  if(noteEl){
+    noteEl.style.display='';
+    noteEl.textContent=gain<0
+      ? 'Minusvalenza di '+fEur(Math.abs(gain))+' — non tassata, riportabile nei 4 anni successivi (rigo RT94).'
+      : 'Plusvalenza di '+fEur(gain)+' → imposta '+fEur(tax)+'. Indicare nel quadro RT, rigo RT30.';
+  }
 
   // ── Side saldo ──
   set('sim_sell_btc',fBtc(simBtc));
@@ -2234,18 +2562,56 @@ function calcSim() {
 
 function applySale() {
   if(!_lastSim){ toast('Calcola prima la vendita','err'); return; }
-  const s=_lastSim;
-  const d=s.date.split('-').reverse().join('/');
-  const msg='Registrare la vendita di '+fBtc(s.btcSold)+' BTC a '+fEur(s.price,0)+'/BTC del '+d+'? Ricavo: '+fEur(s.revenue)+' · Imposta: '+fEur(s.tax);
+  const s = _lastSim;
+
+  // ── Data: legge SEMPRE sim_date in questo momento (non da _lastSim) ──
+  const simDateEl = el('sim_date');
+  const saleDate  = (simDateEl && simDateEl.value) ? simDateEl.value : new Date().toISOString().slice(0,10);
+
+  // ── Validazione data ──
+  const firstPurchase = rows.length ? rows.slice().sort((a,b)=>a.date.localeCompare(b.date))[0].date : null;
+  const today = new Date().toISOString().slice(0,10);
+
+  if(saleDate > today) {
+    toast('La data di vendita non può essere nel futuro','err'); return;
+  }
+  if(firstPurchase && saleDate < firstPurchase) {
+    const fp = firstPurchase.split('-').reverse().join('/');
+    toast('Data precedente al primo acquisto ('+fp+') — impossibile vendere BTC non ancora acquistati','err');
+    return;
+  }
+  const btcAtDate = (() => {
+    const tB = rows.filter(r=>r.date<=saleDate).reduce((s,r)=>s+r.btc,0);
+    const tC = corrections.filter(c=>c.date<=saleDate).reduce((s,c)=>s+c.delta,0);
+    const tS = sales.filter(sl=>sl.date<=saleDate).reduce((s,sl)=>s+sl.btcSold,0);
+    return Math.max(0, tB+tC-tS);
+  })();
+  if(s.btcSold > btcAtDate + 1e-9) {
+    const dp = saleDate.split('-').reverse().join('/');
+    toast('Al '+dp+' avevi solo '+fBtc(btcAtDate)+' BTC disponibili','err');
+    return;
+  }
+
+  // Aggiorna la data nella vendita con quella corretta
+  const sWithDate = {...s, date: saleDate};
+  const d = saleDate.split('-').reverse().join('/');
+  const msg='Registrare la vendita di '+fBtc(sWithDate.btcSold)+' BTC a '+fEur(sWithDate.price,0)+'/BTC del '+d+'? Ricavo: '+fEur(sWithDate.revenue)+' · Imposta: '+fEur(sWithDate.tax);
   confirm2('✅','Conferma vendita',msg, ()=>{
-    sales.push({...s,id:uid()});
+    // Salva exchange e nota (data già corretta in sWithDate)
+    const exchEl=el('sim_exchange'); const noteEl=el('sim_note_field');
+    const saleRecord={...sWithDate,id:uid(),exchange:exchEl?exchEl.value:'',saleNote:noteEl?noteEl.value:''};
+    sales.push(saleRecord);
     el('sim_btc').value='';
     el('sim_price').value=btcNow()||'';
+    const sd=el('sim_date'); if(sd) sd.value='';
+    const snf=el('sim_note_field'); if(snf) snf.value='';
+    const sex=el('sim_exchange'); if(sex) sex.value='';
     _lastSim=null;
     const applyBtn=el('simApplyBtn'); if(applyBtn) applyBtn.style.display='none';
     const ov=el('simOverview'); if(ov) ov.style.display='none';
     const lb=el('simLotsBox'); if(lb) lb.style.display='none';
     set('sim_hint','✓ Vendita registrata — inserisci una nuova simulazione');
+    const sno=el('sim_note');if(sno){sno.style.display='none';sno.textContent='';}
     set('sim_sell_btc','—'); set('sim_rem_btc','—');
     set('sim_side_revenue','—'); set('sim_side_tax','—'); set('sim_side_net','—');
     updateSimStatic();
@@ -2265,32 +2631,62 @@ function deleteSale(id) {
 function renderSalesHist() {
   const box=el('salesHistBox'), wrap=el('salesHistWrap'), cnt=el('salesHistCount');
   if(!box||!wrap) return;
-  if(!sales.length){ box.style.display='none'; return; }
+  const emptyMsg=el('salesEmptyMsg');
+  if(!sales.length){ box.style.display='none'; if(emptyMsg)emptyMsg.style.display=''; return; }
+  if(emptyMsg)emptyMsg.style.display='none';
   box.style.display='';
   if(cnt) cnt.textContent=sales.length+(sales.length===1?' vendita':' vendite');
+
   const totR=sales.reduce((s,sl)=>s+sl.revenue,0);
   const totT=sales.reduce((s,sl)=>s+sl.tax,0);
   const totG=sales.reduce((s,sl)=>s+sl.gain,0);
-  const rh=sales.map(s=>{
+  const totB=sales.reduce((s,sl)=>s+sl.btcSold,0);
+
+    const exchLabel={'binance':'Binance','coinbase':'Coinbase','kraken':'Kraken',
+    'bitpanda':'Bitpanda','nexo':'Nexo','young_platform':'Young Platform',
+    'ledger':'Ledger','altro':'Altro','':''};
+  const exchBadgeCls={'binance':'binance','coinbase':'coinbase','kraken':'kraken',
+    'bitpanda':'default','nexo':'default','young_platform':'default','ledger':'ledger','altro':'default','':'default'};
+
+  const rows_html=sales.map((s,i)=>{
     const d=s.date.split('-').reverse().join('/');
-    const net=s.revenue-s.tax;
-    return '<div class="sale-row" onclick="openSaleDetail(this.dataset.id)" data-id="'+s.id+'" style="cursor:pointer">'
-      +'<span style="color:var(--text2);min-width:5.5rem;flex-shrink:0">'+d+'</span>'
-      +'<span style="color:var(--btc);flex-shrink:0">'+fBtc(s.btcSold)+' BTC</span>'
-      +'<span style="color:var(--text3);flex-shrink:0">@ '+fEur(s.price,0)+'</span>'
-      +'<span style="color:var(--text2)">'+fEur(s.revenue)+'</span>'
-      +'<span style="flex:1;text-align:right;color:'+(s.gain>=0?'var(--green)':'var(--red)')+';font-weight:700">'+(s.gain>=0?'+':'')+fEur(s.gain)+'</span>'
-      +'<span style="color:var(--amber);min-width:5rem;text-align:right">'+fEur(s.tax)+'</span>'
-      +'<span style="color:var(--text4);font-size:.65rem;flex-shrink:0">↗</span>'
-      +'</div>';
+    const gcls=s.gain>=0?'sr-gain-pos':'sr-gain-neg';
+    const tcls=s.tax>0?'sr-tax':'sr-tax zero';
+    const exch=s.exchange?exchLabel[s.exchange]||s.exchange:'';
+    const noteHtml=s.saleNote?'<div style="font-family:var(--sans);font-size:.65rem;color:var(--text3);margin-top:.12rem;font-style:italic">'+s.saleNote+'</div>':'';
+    const exchCls=exchBadgeCls[s.exchange||'']||'default';
+    const exchHtml=exch?'<span class="exch-badge '+exchCls+'">'+exch+'</span>':'';
+    return '<tr onclick="openSaleDetail(this.dataset.id)" data-id="'+s.id+'">'
+      +'<td class="sr-date"><div style="font-weight:700;color:var(--text2);font-size:.7rem;margin-bottom:.1rem">#'+(i+1)+' · '+d+'</div>'
+        +exchHtml+noteHtml+'</td>'
+      +'<td class="sr-btc">'+fBtc(s.btcSold)
+        +'<div style="font-family:var(--sans);font-size:.65rem;color:var(--text3);font-weight:400;margin-top:.1rem">@ '+fEur(s.price,0)+'/BTC</div></td>'
+      +'<td class="sr-rev">'+fEur(s.revenue)
+        +'<div style="font-family:var(--sans);font-size:.65rem;color:var(--text3);font-weight:400;margin-top:.1rem">costo '+fEur(s.revenue-s.gain)+'</div></td>'
+      +'<td class="'+gcls+'">'+(s.gain>=0?'+':'')+fEur(s.gain)+'</td>'
+      +'<td class="'+tcls+'">'+(s.tax>0?fEur(s.tax):'—')+'</td>'
+      +'<td style="color:var(--text4);font-size:.7rem;padding-right:.5rem">↗</td>'
+      +'</tr>';
   }).join('');
-  wrap.innerHTML=rh
-    +'<div style="display:flex;gap:1.5rem;padding:.72rem 1.2rem;background:var(--bg2);border-top:2px solid var(--amber-brd);font-family:var(--mono);font-size:.78rem;flex-wrap:wrap">'
-    +'<span style="color:var(--text3)">Totali</span>'
-    +'<span><span style="color:var(--text3)">ricavi </span><span style="color:var(--btc);font-weight:700">'+fEur(totR)+'</span></span>'
-    +'<span><span style="color:var(--text3)">gain </span><span style="color:'+(totG>=0?'var(--green)':'var(--red)')+';font-weight:700">'+(totG>=0?'+':'')+fEur(totG)+'</span></span>'
-    +'<span><span style="color:var(--text3)">imposte </span><span style="color:var(--amber);font-weight:700">'+fEur(totT)+'</span></span>'
-    +'</div>';
+
+  wrap.innerHTML='<table class="sales-reg">'
+    +'<thead><tr>'
+    +'<th style="text-align:left"># · Data · Exchange</th>'
+    +'<th>BTC · Prezzo</th>'
+    +'<th>Ricavo · Costo FIFO</th>'
+    +'<th>Gain</th>'
+    +'<th>Imposta</th>'
+    +'<th></th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows_html+'</tbody>'
+    +'<tfoot><tr>'
+    +'<td style="text-align:left;font-family:var(--sans);font-size:.62rem;color:var(--text3);font-weight:400">'+sales.length+(sales.length===1?' vendita':' vendite')+' registrate</td>'
+    +'<td class="sr-btc">'+fBtc(totB)+'</td>'
+    +'<td class="sr-rev">'+fEur(totR)+'</td>'
+    +'<td class="'+(totG>=0?'sr-gain-pos':'sr-gain-neg')+'">'+(totG>=0?'+':'')+fEur(totG)+'</td>'
+    +'<td class="'+(totT>0?'sr-tax':'sr-tax zero')+'">'+(totT>0?fEur(totT):'—')+'</td>'
+    +'<td></td>'
+    +'</tr></tfoot></table>';
 }
 
 // ═══ DICHIARAZIONE PER IL POSSESSO ═══
@@ -2392,10 +2788,34 @@ function renderHoldingDecl() {
       ? 'Prezzo attuale — aggiorna al 31/12'
       : (histP > 0 ? 'Prezzo stimato' : 'Inserisci prezzo');
 
+    // Anno passato con prezzo noto → campo read-only (modificabile solo se si vuole)
+    // Anno corrente → campo editabile (prezzo non ancora noto)
+    const hasKnownPrice = !isCurrent && priceVal > 0;
+    const priceCell = hasKnownPrice
+      // Prezzo noto: mostra valore fisso + pulsante "modifica" per sbloccare
+      ? '<div style="display:flex;align-items:center;gap:.45rem">'
+          +'<span style="font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--text)">'
+            +new Intl.NumberFormat('it-IT',{maximumFractionDigits:0}).format(priceVal)
+          +'</span>'
+          +'<span style="font-family:var(--sans);font-size:.62rem;color:var(--text3)">€/BTC</span>'
+          +'<button onclick="unlockPrice(this,\''+yr+'\')" '
+            +'title="Modifica il prezzo" '
+            +'style="font-family:var(--sans);font-size:.6rem;padding:.1rem .35rem;border-radius:4px;border:1px solid var(--line2);background:transparent;color:var(--text4);cursor:pointer;margin-left:.2rem;transition:all .12s" '
+            +'onmouseover="this.style.color=\'var(--btc)\';this.style.borderColor=\'var(--btc)\'" '
+            +'onmouseout="this.style.color=\'\';this.style.borderColor=\'\'">✎</button>'
+          +'<input class="price-inp" type="number" min="0" step="100" value="'+priceVal+'" '
+            +'data-yr="'+yr+'" oninput="onPriceInput(this)" '
+            +'style="display:none;width:7rem" placeholder="€/BTC">'
+        +'</div>'
+      // Prezzo da inserire (anno corrente o anno passato senza dati storici)
+      : '<input class="price-inp" type="number" min="0" step="100" value="'+(priceVal||'')+'" '
+          +'placeholder="'+( isCurrent ? 'live → 31/12' : 'inserisci' )+'" '
+          +'data-yr="'+yr+'" oninput="onPriceInput(this)">';
+
     return '<tr>'
       +'<td>'+yr+tag+'</td>'
       +'<td class="hd-btc">'+fBtc(btcHeld)+'</td>'
-      +'<td><input class="price-inp" type="number" min="0" step="100" value="'+(priceVal||'')+'" placeholder="€/BTC" data-yr="'+yr+'" oninput="onPriceInput(this)"></td>'
+      +'<td>'+priceCell+'</td>'
       +'<td class="hd-val">'+(val>0?fEur(val):'—')+'</td>'
       +'<td class="hd-ivafe'+(hasIvafe&&ivafe>0?'':' none')+'">'+(hasIvafe?(ivafe>0?fEur(ivafe):'inserisci prezzo'):'— (pre-2023)')+'</td>'
       +'<td class="hd-rw">'+( btcHeld>0?'✓ Obblig.':'—')+'</td>'
@@ -2456,7 +2876,18 @@ function onPriceInput(inp) {
   window._priceSaveTimer = setTimeout(()=>saveAll(), 800);
 }
 
-// ── Popup dettaglio anno — dichiarazione completa ──
+function unlockPrice(btn, yr) {
+  // Nasconde il valore fisso e mostra il campo di modifica
+  const cell = btn.parentElement;
+  const inp  = cell.querySelector('.price-inp');
+  if(!inp) return;
+  cell.style.display = 'none';
+  inp.style.display  = '';
+  inp.focus();
+  inp.select();
+}
+
+
 function openHoldingYear(yr) {
   const btcHeld  = getYearEndBtc(yr);
   const btcStart = yr==='2013' ? 0 : getYearEndBtc(String(parseInt(yr)-1));
